@@ -28,7 +28,7 @@ public struct sLevel
     public Scores score;
 }
 
-
+// this class is in charge of starting the level and loading it
 public class LevelManager : MonoBehaviour
 {
     public GameObject gameController;
@@ -42,105 +42,93 @@ public class LevelManager : MonoBehaviour
     public int levelNum;
     public Scores scores;
 
+    List<SavedTile> goalTiles;
+
     [SerializeField] Transform playerPrefab;
 
 
     public void Start()
     {
-        print("Loading tilemap");
         tilemap = GameObject.FindObjectOfType<Tilemap>();
-        levelNum = MenuController.levelNum;
+        levelNum = SceneLoader.levelNum;
         LoadMap();
+        print($"Loading Level {levelNum}");
     }
 
+#if UNITY_EDITOR
     public void SaveMap()
     {
-        sLevel newLevel = new sLevel() {
+        sLevel newLevel = new sLevel()
+        {
             levelName = $"Level {levelNum}",
             levelIndex = levelNum,
             tiles = GetTilesFromMap(tilemap).ToList(),
-            score = new Scores() {
+            score = new Scores()
+            {
                 startingMoves = scores.startingMoves,
-                goldMoves = scores.goldMoves, 
+                goldMoves = scores.goldMoves,
                 silverMoves = scores.silverMoves,
                 bronzeMoves = scores.bronzeMoves
             }
-    };
-
-        /* ----- SAVE TO LOCAL APP
-        StreamWriter sw = new StreamWriter(Application.dataPath + $"/Level {_levelIndex}");
-        if (sw == null) {
-            Debug.LogError("Could not create a Stream Writer for saving the level");
-            return;
-        }
-
-        sw.Write(JsonUtility.ToJson(newLevel));
-        sw.Close();
-        */
+        };
 
         var levelFile = ScriptableObject.CreateInstance<ScriptableLevel>();
 
         levelFile.name = $"/Level {levelNum}";
         levelFile.jsonFile = JsonUtility.ToJson(newLevel);
-        
+
         print(levelFile.jsonFile);
 
         ScriptableObjectUnity.SaveLevelFile(levelFile);
+
 
         Debug.Log("Level Saved! :)");
 
         IEnumerable<SavedTile> GetTilesFromMap(Tilemap map)
         {
-            foreach(var pos in map.cellBounds.allPositionsWithin)
+            foreach (var pos in map.cellBounds.allPositionsWithin)
             {
                 if (map.HasTile(pos))
                 {
                     var levelTile = map.GetTile<LevelTile>(pos);
                     yield return new SavedTile()
                     {
-                        position = new Vector2Int(pos.x,pos.y),
-                        tile = (int) levelTile.type
+                        position = new Vector2Int(pos.x, pos.y),
+                        tile = (int)levelTile.type
                     };
                 }
             }
         }
 
     }
+#endif
 
     public void ClearMap()
     {
         Tilemap[] maps = FindObjectsOfType<Tilemap>();
 
-        foreach(Tilemap map in maps)
+        foreach (Tilemap map in maps)
         {
             map.ClearAllTiles();
         }
     }
 
-    private void LevelLoaded()
+    public void LoadBase()
     {
-        gameController.SetActive(true);
+        int a = levelNum;
+        levelNum = -1;
+        LoadMap(true);
+        levelNum = a;
     }
+
 
     public void LoadMap(bool editing = false)
     {
-        /* ----- LOAD FROM LOCAL APP
-        string levelPath = Application.dataPath + $"/Level {_levelIndex}";
-
-        if (!File.Exists(levelPath))
-        {
-            Debug.LogError($"Level { _levelIndex} does not exist");
-            return;
-        }
-
-        StreamReader sr = new StreamReader(levelPath);
-
-        string jsonString = sr.ReadToEnd();
-        */
+        goalTiles = new List<SavedTile>();
 
         // locate file from resources
         var levelFile = Resources.Load<ScriptableLevel>($"Levels/Level {levelNum}");
-        if(levelFile == null)
+        if (levelFile == null)
         {
             Debug.LogError($"Level { levelNum} does not exist");
             return;
@@ -155,19 +143,15 @@ public class LevelManager : MonoBehaviour
 
         foreach (var savedTile in level.tiles)
         {
-            switch ((TileType) savedTile.tile)
+            switch ((TileType)savedTile.tile)
             {
                 case TileType.BaseWall:
                     setTile(savedTile.position, Resources.Load<LevelTile>("LevelTiles/Ground"));
                     break;
                 case TileType.GoalBlue:
-                    setTile(savedTile.position, Resources.Load<LevelTile>("LevelTiles/GoalBlue"));
-                    break;
                 case TileType.GoalRed:
-                    setTile(savedTile.position, Resources.Load<LevelTile>("LevelTiles/GoalRed"));
-                    break;
                 case TileType.GoalGreen:
-                    setTile(savedTile.position, Resources.Load<LevelTile>("LevelTiles/GoalGreen"));
+                    goalTiles.Add(savedTile);
                     break;
 
                 // this ones spawn and move the players
@@ -194,22 +178,21 @@ public class LevelManager : MonoBehaviour
                 default: throw new System.ArgumentOutOfRangeException();
             }
 
-            LevelLoaded();
-        }
 
-        void setTile(Vector2Int tilePos, TileBase tile)
-        {
-            tilemap.SetTile(new Vector3Int(tilePos.x, tilePos.y, 0), tile);
         }
+        gameController.SetActive(true);
+
+        setGoalTiles();
+
 
         void spawnAndMovePlayer(Vector2Int tilePos, string name)
         {
             print("Spawn and move " + name);
 
-            PlayerController pc = 
+            PlayerController pc =
                 Instantiate(
                     playerPrefab,
-                    new Vector3(tilePos.x + 0.5f, tilePos.y + 0.5f, 0), 
+                    new Vector3(tilePos.x + 0.5f, tilePos.y + 0.5f, 0),
                     Quaternion.identity,
                     GameObject.Find("/Players").transform)
                 .GetComponent<PlayerController>();
@@ -217,12 +200,43 @@ public class LevelManager : MonoBehaviour
             pc.goalTile = Resources.Load<LevelTile>("LevelTiles/Goal" + name);
             pc.goalDoneTile = Resources.Load<LevelTile>("LevelTiles/Start" + name);
 
-            pc.offSprite = Resources.Load<Sprite>("Sprites/" + name );
-            pc.onSprite = Resources.LoadAll<Sprite>("Sprites/" + name)[4];
+            pc.sprites = Resources.LoadAll<Sprite>("Sprites/" + name);
 
         }
 
         Debug.Log($"{levelNum} Loaded! :)");
+    }
+
+    void setTile(Vector2Int tilePos, TileBase tile)
+    {
+        tilemap.SetTile(new Vector3Int(tilePos.x, tilePos.y, 0), tile);
+    }
+
+    private void setGoalTiles()
+    {
+        foreach (SavedTile savedTile in goalTiles)
+            switch ((TileType)savedTile.tile)
+            {
+                case TileType.GoalBlue:
+                    setTile(savedTile.position, Resources.Load<LevelTile>("LevelTiles/GoalBlue"));
+                    break;
+                case TileType.GoalRed:
+                    setTile(savedTile.position, Resources.Load<LevelTile>("LevelTiles/GoalRed"));
+                    break;
+                case TileType.GoalGreen:
+                    setTile(savedTile.position, Resources.Load<LevelTile>("LevelTiles/GoalGreen"));
+                    break;
+                default: throw new System.ArgumentOutOfRangeException();
+            }
+    }
+
+    public void RestartLevel()
+    {
+        foreach (GameObject player in GameObject.FindGameObjectsWithTag("Player"))
+            player.GetComponent<PlayerController>().reset();
+
+        gameController.GetComponent<GameController>().resetGame();
+        setGoalTiles();
     }
 
     public void NextLevel()

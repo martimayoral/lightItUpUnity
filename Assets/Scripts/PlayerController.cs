@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public class PlayerController: MonoBehaviour
+public class PlayerController : MonoBehaviour
 {
     LevelTile coliderTile;
 
@@ -17,35 +17,80 @@ public class PlayerController: MonoBehaviour
     }
     moveStates moveState;
     public Vector3Int mapPosition { get; private set; }
+    private Vector3 initalPosition;
 
     // the goal
-    public LevelTile goalTile; 
+    [HideInInspector]
+    public LevelTile goalTile;
+    [HideInInspector]
     public LevelTile goalDoneTile;
-    
+
     [HideInInspector]
     public bool goalReached;
-    public Sprite offSprite; // light off (goal not reached)
-    public Sprite onSprite; // light on (goal reached)
-    SpriteRenderer spriteRenderer;
+    [HideInInspector]
+    public Sprite[] sprites; // where sprites from player will be stored
+    int spriteNum;
+    int spriteRenderNum;
+    public SpriteRenderer spriteRenderer;
 
-    public void resetSprite()
+
+    public void reset()
     {
-        spriteRenderer.sprite = offSprite;
+        spriteNum = 0;
+        spriteRenderNum = 0;
+        transform.position = initalPosition;
+        mapPosition = LevelManager.Instance.tilemap.WorldToCell(initalPosition);
+        goalReached = false;
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
-        goalReached = false;
-        resetSprite();
-
         Debug.Log("Player Start");
 
         coliderTile = Resources.Load<LevelTile>("LevelTiles/Ground");
 
-        mapPosition = LevelManager.Instance.tilemap.WorldToCell(transform.position);
+        initalPosition = transform.position;
+        reset();
+
     }
+
+    private void OnEnable()
+    {
+        StartCoroutine(changeSprite());
+    }
+
+    private void OnDisable()
+    {
+        StopCoroutine(changeSprite());
+    }
+
+    IEnumerator changeSprite()
+    {
+        bool reverse = false;
+
+        while (true)
+        {
+            yield return new WaitForSeconds(1.4f);
+
+            for (int i = 0; i < 4; i++)
+            {
+                yield return new WaitForSeconds(.15f);
+                if (reverse)
+                    spriteRenderNum = 3 - i;
+                else
+                    spriteRenderNum = i;
+            }
+            reverse = !reverse;
+        }
+    }
+
+    private void Update()
+    {
+        spriteRenderer.sprite = sprites[spriteNum + spriteRenderNum];
+    }
+
+
     public void clearMovement()
     {
         moveState = moveStates.NoMoved;
@@ -64,7 +109,7 @@ public class PlayerController: MonoBehaviour
     }
 
     public bool hasMoved() { return moveState != moveStates.NoMoved; }
-    
+
     public bool hasCollided() { return moveState == moveStates.Collided; }
 
     bool Collides(Vector3Int mapTilePos)
@@ -108,7 +153,7 @@ public class PlayerController: MonoBehaviour
             if (LevelManager.Instance.tilemap.GetTile(mapTilePos) == goalTile)
             {
                 goalReached = true;
-                spriteRenderer.sprite = onSprite;
+                spriteNum = 4;
                 LevelManager.Instance.tilemap.SetTile(mapTilePos, goalDoneTile);
             }
 
@@ -133,6 +178,12 @@ public class PlayerController: MonoBehaviour
             //Move
             LeanTween.move(gameObject, moveToPosition, UserConfig.animationSpeed)
                 .setEaseInOutSine();
+
+            if (moveToPosition.x > transform.position.x + .1f)
+                StartCoroutine(moveEffect(spriteDirections.Right));
+            else if (moveToPosition.x + .1f < transform.position.x)
+                StartCoroutine(moveEffect(spriteDirections.Left));
+
         }
         if (moveState == moveStates.Collided)
         {
@@ -142,5 +193,17 @@ public class PlayerController: MonoBehaviour
             LeanTween.move(gameObject, transform.position, speed).setDelay(speed);
         }
 
+    }
+
+    enum spriteDirections
+    {
+        Right = 1, Left
+    }
+
+    IEnumerator moveEffect(spriteDirections direction)
+    {
+        spriteNum += 8 * ((int)direction);
+        yield return new WaitForSeconds(UserConfig.animationSpeed);
+        spriteNum -= 8 * ((int)direction);
     }
 }

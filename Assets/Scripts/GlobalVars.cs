@@ -2,6 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum medalType
+{
+    none,
+    bronze,
+    silver, 
+    gold
+}
+
 public class GlobalVars : MonoBehaviour
 {
     public static Color gold = new Color32(218, 165, 32, 255);

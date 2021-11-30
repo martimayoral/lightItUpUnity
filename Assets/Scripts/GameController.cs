@@ -6,6 +6,15 @@ using UnityEngine.UI;
 using TMPro;
 
 
+public enum eGameState
+{
+    Play,
+    Pause,
+    Win,
+    Lose
+}
+
+
 // This class controlls everything that happens in the game
 
 public class GameController : MonoBehaviour
@@ -17,16 +26,17 @@ public class GameController : MonoBehaviour
     public static GameObject[] lightBuibs { get; private set; }
 
     // punctuation system
-    public GameObject movesText;
-    public GameObject nextMedalText;
+    public TextMeshProUGUI movesText;
+    public TextMeshProUGUI nextMedalText;
     int moves = 0;
-    public enum medalType
-    {
-        gold, silver, bronze, none
-    }
 
+    // game state
+    public static eGameState gameState;
+
+    // medals
     struct medal
     {
+        public medalType type;
         public medalType nextMedal;
         public Color medalColor;
         public int moves;
@@ -34,27 +44,51 @@ public class GameController : MonoBehaviour
     medal currentMedal;
     medal[] medals = new medal[]
     {
-        new medal() { medalColor = GlobalVars.gold, nextMedal = medalType.silver },
-        new medal() { medalColor = GlobalVars.silver, nextMedal = medalType.bronze },
-        new medal() { medalColor = GlobalVars.bronze, nextMedal = medalType.none },
-        new medal() { medalColor = GlobalVars.none, nextMedal = medalType.none, moves = 0 },
+        new medal() { type= medalType.none, medalColor = GlobalVars.none, nextMedal = medalType.none, moves = 0 },
+        new medal() { type= medalType.bronze, medalColor = GlobalVars.bronze, nextMedal = medalType.none },
+        new medal() { type= medalType.silver, medalColor = GlobalVars.silver, nextMedal = medalType.bronze },
+        new medal() { type= medalType.gold, medalColor = GlobalVars.gold, nextMedal = medalType.silver }
     };
 
     // input buffer
     Queue<Vector3> inputBuffer;
     float lastInputTime = 0.0f;
 
+    static public GameController Instance { get; private set; }
+
+    private void Awake()
+    {
+        Instance = this;
+    }
+
+    public void resetGame()
+    {
+        Debug.Log("Reseting game");
+
+        // game state
+        gameState = eGameState.Play;
+
+        // moves and medals
+        moves = LevelManager.Instance.scores.startingMoves;
+        movesText.SetText(moves.ToString());
+        currentMedal = medals[(int)medalType.gold];
+        nextMedalText.color = currentMedal.medalColor;
+        nextMedalText.SetText(currentMedal.moves.ToString());
+
+        // create an imput buffer queue to make a "memory"
+        inputBuffer = new Queue<Vector3>();
+        initialTouch.x = float.PositiveInfinity;
+    }
 
     // Start is called before the first frame update
     void Start()
     {
         Debug.Log("Start Game Controller");
 
-        // create an imput buffer queue to make a "memory"
-        inputBuffer = new Queue<Vector3>();
-
         // get the players that the level manager has instanciated
-        lightBuibs = GameObject.FindGameObjectsWithTag("Player"); 
+        lightBuibs = GameObject.FindGameObjectsWithTag("Player");
+
+        if (lightBuibs.Length == 0) gameObject.SetActive(false);
 
         // set the moves value
         medals[(int)medalType.gold].moves = LevelManager.Instance.scores.goldMoves;
@@ -62,12 +96,15 @@ public class GameController : MonoBehaviour
         medals[(int)medalType.bronze].moves = LevelManager.Instance.scores.bronzeMoves;
 
         // set the initial text values and color
-        moves = LevelManager.Instance.scores.startingMoves;
-        movesText.GetComponent<TextMeshProUGUI>().SetText(moves.ToString());
-        currentMedal = medals[(int)medalType.gold];
-        nextMedalText.GetComponent<TextMeshProUGUI>().color = currentMedal.medalColor;
-        nextMedalText.GetComponent<TextMeshProUGUI>().SetText(currentMedal.moves.ToString());
+        resetGame();
     }
+
+    public void addMoves(int nMoves)
+    {
+        moves += nMoves;
+        movesText.SetText(moves.ToString());
+    }
+
 
     private void predictPlayerMoves(Vector3 translation)
     {
@@ -110,16 +147,20 @@ public class GameController : MonoBehaviour
 
 
         // count the move
-        if (!allCollided)
+        if (allCollided)
+            AudioManager.Instance.PlaySound(AudioManager.eSound.NoMove);
+        else
         {
+            AudioManager.Instance.PlaySound(AudioManager.eSound.Move);
+
             moves--;
-            movesText.GetComponent<TextMeshProUGUI>().SetText(moves.ToString());
+            movesText.SetText(moves.ToString());
 
             if (moves < currentMedal.moves)
             {
                 currentMedal = medals[(int)currentMedal.nextMedal];
-                nextMedalText.GetComponent<TextMeshProUGUI>().color = currentMedal.medalColor;
-                nextMedalText.GetComponent<TextMeshProUGUI>().SetText(currentMedal.moves.ToString());
+                nextMedalText.color = currentMedal.medalColor;
+                nextMedalText.SetText(currentMedal.moves.ToString());
             }
 
         }
@@ -128,6 +169,11 @@ public class GameController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        //Debug.Log(gameState);
+        if (gameState != eGameState.Play)
+            return;
+
+
         // player movement
         if (Input.touchCount > 0)
         {
@@ -141,6 +187,9 @@ public class GameController : MonoBehaviour
 
             if (touch.phase == TouchPhase.Ended)
             {
+                if (initialTouch.x == float.PositiveInfinity)
+                    return;
+
                 Vector2 touchDif = touchPos - initialTouch;
 
                 if (Mathf.Abs(touchDif.x) > Mathf.Abs(touchDif.y))
@@ -155,7 +204,7 @@ public class GameController : MonoBehaviour
         }
 
         // input action
-        if(inputBuffer.Count > 0 && (Time.time - lastInputTime > UserConfig.animationSpeed * 1.2))
+        if (inputBuffer.Count > 0 && (Time.time - lastInputTime > UserConfig.animationSpeed * 1.2))
         {
             //Debug.Log("Input!");
             lastInputTime = Time.time;
@@ -174,6 +223,21 @@ public class GameController : MonoBehaviour
                 winState = false;
         }
         if (winState)
-            LevelLoader.Instance.LoadMenu();
+        {
+            gameState = eGameState.Win;
+            AudioManager.Instance.PlaySound(AudioManager.eSound.Win);
+
+            Debug.Log("WON! Level: " + SceneLoader.levelNum + ", medal: " + currentMedal.type);
+            LevelsController.changeMedal(SceneLoader.levelNum, currentMedal.type);
+            PauseMenu.Instance.Win(currentMedal.type);
+        }
+        else if (moves < 1)
+        {
+            gameState = eGameState.Lose;
+            AudioManager.Instance.PlaySound(AudioManager.eSound.Lose);
+
+            Debug.Log("YOU LOST");
+            PauseMenu.Instance.Lose();
+        }
     }
 }
