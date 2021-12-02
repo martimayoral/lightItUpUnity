@@ -6,10 +6,8 @@ using System;
 
 public class AdsManager : MonoBehaviour, IUnityAdsListener
 {
-
-#if UNITY_ANDROID
+    // UNITY ANDROID
     string gameId = "4477799";
-#endif
 
     Action onRewardedAdSuccess;
 
@@ -117,7 +115,7 @@ public class AdsManager : MonoBehaviour, IUnityAdsListener
         if (placementId == "Rewarded_Android" && showResult == ShowResult.Finished)
         {
             Debug.Log("Rewarded add finished");
-            onRewardedAdSuccess.Invoke();
+            Instance.onRewardedAdSuccess.Invoke();
         }
     }
 }
