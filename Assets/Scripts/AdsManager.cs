@@ -13,6 +13,7 @@ public class AdsManager : MonoBehaviour, IUnityAdsListener
 
     Action onRewardedAdSuccess;
 
+    public bool adsOn = true;
     static public AdsManager Instance { get; private set; }
 
     private void Awake()
@@ -23,6 +24,9 @@ public class AdsManager : MonoBehaviour, IUnityAdsListener
     // Start is called before the first frame update
     void Start()
     {
+        if (!adsOn)
+            return;
+
         Advertisement.Initialize(gameId);
         Advertisement.AddListener(this);
 
@@ -31,17 +35,26 @@ public class AdsManager : MonoBehaviour, IUnityAdsListener
 
     private void OnDestroy()
     {
+        if (!adsOn)
+            return;
+
         HideBanner();
     }
 
     public void PlayAdd()
     {
+        if (!adsOn)
+            return;
+
         if (Advertisement.IsReady("Interstitial_Android"))
             Advertisement.Show("Interstitial_Android");
     }
 
     public void PlayRewardedAdd(Action onSuccess)
     {
+        if (!adsOn)
+            return;
+
         onRewardedAdSuccess = onSuccess;
 
         if (Advertisement.IsReady("Rewarded_Android"))
@@ -52,6 +65,9 @@ public class AdsManager : MonoBehaviour, IUnityAdsListener
 
     public void ShowBanner()
     {
+        if (!adsOn)
+            return;
+
         if (Advertisement.IsReady("Banner_Android"))
         {
             Advertisement.Banner.SetPosition(BannerPosition.BOTTOM_CENTER);
@@ -71,6 +87,9 @@ public class AdsManager : MonoBehaviour, IUnityAdsListener
 
     public void HideBanner()
     {
+        if (!adsOn)
+            return;
+
         Advertisement.Banner.Hide();
     }
 
@@ -92,7 +111,10 @@ public class AdsManager : MonoBehaviour, IUnityAdsListener
 
     public void OnUnityAdsDidFinish(string placementId, ShowResult showResult)
     {
-        if(placementId == "Rewarded_Android" && showResult == ShowResult.Finished)
+        if (!adsOn)
+            return;
+
+        if (placementId == "Rewarded_Android" && showResult == ShowResult.Finished)
         {
             Debug.Log("Rewarded add finished");
             onRewardedAdSuccess.Invoke();
