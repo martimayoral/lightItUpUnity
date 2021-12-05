@@ -7,7 +7,7 @@ public static class LevelsController
     public static medalType[] levelMedals { get; private set; }
     public static int lastLevelCompleted { get; private set; }
 
-    private static int nLevels = 17;
+    public const int nLevels = 17;
 
     public static void ResetData()
     {

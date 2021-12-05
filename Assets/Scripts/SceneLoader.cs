@@ -26,9 +26,16 @@ public class SceneLoader : MonoBehaviour
 
     public void LoadLevel(int ln)
     {
-        levelNum = ln;
-        print("Level load Level " + ln);
-        StartCoroutine(LoadScene("Game"));
+        if (ln < LevelsController.nLevels)
+        {
+            levelNum = ln;
+            print("Level load Level " + ln);
+            StartCoroutine(LoadScene("Game"));
+        }
+        else
+        {
+            Debug.LogError("Trying to load a level that doesn't exist (" + ln + ")");
+        }
     }
 
     IEnumerator LoadScene(string sceneName)

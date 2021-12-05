@@ -20,39 +20,45 @@ public enum eGameState
 public class GameController : MonoBehaviour
 {
     // device touch
-    Vector2 initialTouch;
+    public Vector2 initialTouch;
 
     // the players
     public static GameObject[] lightBuibs { get; private set; }
 
-    // punctuation system
-    public TextMeshProUGUI movesText;
-    public TextMeshProUGUI nextMedalText;
-    int moves = 0;
 
     // game state
     public static eGameState gameState;
 
-    // medals
+    // back moves
+    int movesCount;
+    public Button undoButton;
+    static int undoesToAd;
+
+    // punctuation system
+    public TextMeshProUGUI movesText;
+    public TextMeshProUGUI nextMedalText;
+    public Image medalUI;
+    Sprite[] medalSprites;
+    int movesLeft;
     struct medal
     {
         public medalType type;
-        public medalType nextMedal;
         public Color medalColor;
         public int moves;
     }
     medal currentMedal;
     medal[] medals = new medal[]
     {
-        new medal() { type= medalType.none, medalColor = GlobalVars.none, nextMedal = medalType.none, moves = 0 },
-        new medal() { type= medalType.bronze, medalColor = GlobalVars.bronze, nextMedal = medalType.none },
-        new medal() { type= medalType.silver, medalColor = GlobalVars.silver, nextMedal = medalType.bronze },
-        new medal() { type= medalType.gold, medalColor = GlobalVars.gold, nextMedal = medalType.silver }
+        new medal() { type= medalType.none, medalColor = GlobalVars.none, moves = -1 },
+        new medal() { type= medalType.bronze, medalColor = GlobalVars.bronze },
+        new medal() { type= medalType.silver, medalColor = GlobalVars.silver },
+        new medal() { type= medalType.gold, medalColor = GlobalVars.gold }
     };
 
     // input buffer
     Queue<Vector3> inputBuffer;
     float lastInputTime = 0.0f;
+
 
     static public GameController Instance { get; private set; }
 
@@ -69,15 +75,21 @@ public class GameController : MonoBehaviour
         gameState = eGameState.Play;
 
         // moves and medals
-        moves = LevelManager.Instance.scores.startingMoves;
-        movesText.SetText(moves.ToString());
+        movesLeft = LevelManager.Instance.scores.startingMoves;
+        movesText.SetText(movesLeft.ToString());
         currentMedal = medals[(int)medalType.gold];
+        medalUI.sprite = medalSprites[(int)medalType.gold];
         nextMedalText.color = currentMedal.medalColor;
         nextMedalText.SetText(currentMedal.moves.ToString());
 
         // create an imput buffer queue to make a "memory"
         inputBuffer = new Queue<Vector3>();
         initialTouch.x = float.PositiveInfinity;
+
+        // moves history
+        undoButton.interactable = false;
+        movesCount = 0;
+        //foreach()
     }
 
     // Start is called before the first frame update
@@ -88,23 +100,49 @@ public class GameController : MonoBehaviour
         // get the players that the level manager has instanciated
         lightBuibs = GameObject.FindGameObjectsWithTag("Player");
 
-        if (lightBuibs.Length == 0) gameObject.SetActive(false);
-
         // set the moves value
         medals[(int)medalType.gold].moves = LevelManager.Instance.scores.goldMoves;
         medals[(int)medalType.silver].moves = LevelManager.Instance.scores.silverMoves;
         medals[(int)medalType.bronze].moves = LevelManager.Instance.scores.bronzeMoves;
 
+        // sprites
+        medalSprites = Resources.LoadAll<Sprite>("Other/Stars");
+
         // set the initial text values and color
         resetGame();
     }
 
-    public void addMoves(int nMoves)
+
+    public void BtnUndo()
     {
-        moves += nMoves;
-        movesText.SetText(moves.ToString());
+        inputBuffer.Enqueue(new Vector3(0, 0, -1));
     }
 
+    void UndoMove()
+    {
+        Debug.Log("Undo (moves done: " + movesCount);
+
+        if (movesCount > 0)
+        {
+            foreach (GameObject lb in lightBuibs)
+            {
+                lb.GetComponent<PlayerController>().UndoMove();
+            }
+            addMove();
+
+            movesCount--;
+            undoesToAd--;
+            if (undoesToAd == 0)
+            {
+                AdsManager.Instance.PlayAdd();
+            }
+        }
+
+        if (movesCount <= 0)
+        {
+            undoButton.interactable = false;
+        }
+    }
 
     private void predictPlayerMoves(Vector3 translation)
     {
@@ -128,7 +166,8 @@ public class GameController : MonoBehaviour
         }
     }
 
-    private void MovePlayers(Vector3 translation)
+    // moves players returns true if some moved
+    private bool MovePlayers(Vector3 translation)
     {
         // predict moves (for who colides first)
         predictPlayerMoves(translation);
@@ -152,18 +191,47 @@ public class GameController : MonoBehaviour
         else
         {
             AudioManager.Instance.PlaySound(AudioManager.eSound.Move);
+        }
 
-            moves--;
-            movesText.SetText(moves.ToString());
+        return !allCollided;
+    }
 
-            if (moves < currentMedal.moves)
+    void substractMove()
+    {
+        movesLeft--;
+        movesText.SetText(movesLeft.ToString());
+
+        // change next medal if necessary
+        if (movesLeft < currentMedal.moves)
+        {
+            currentMedal = medals[(int)currentMedal.type - 1];
+            nextMedalText.color = currentMedal.medalColor;
+            nextMedalText.SetText(currentMedal.moves.ToString());
+            medalUI.sprite = medalSprites[(int)currentMedal.type];
+        }
+    }
+
+    public void addMoves(int nMoves)
+    {
+        for (int i = 0; i < nMoves; i++)
+        {
+            addMove();
+        }
+    }
+    void addMove()
+    {
+        movesLeft++;
+        movesText.SetText(movesLeft.ToString());
+
+        // change next medal if necessary
+        if (currentMedal.type != medalType.gold)
+            if (movesLeft > medals[(int)currentMedal.type + 1].moves)
             {
-                currentMedal = medals[(int)currentMedal.nextMedal];
+                currentMedal = medals[(int)currentMedal.type + 1];
                 nextMedalText.color = currentMedal.medalColor;
                 nextMedalText.SetText(currentMedal.moves.ToString());
+                medalUI.sprite = medalSprites[(int)currentMedal.type];
             }
-
-        }
     }
 
     // Update is called once per frame
@@ -178,6 +246,8 @@ public class GameController : MonoBehaviour
         if (Input.touchCount > 0)
         {
             Touch touch = Input.GetTouch(0);
+            //Debug.Log("PHASE: " + touch.phase);
+
             Vector2 touchPos = Camera.main.ScreenToWorldPoint(touch.position);
 
             if (touch.phase == TouchPhase.Began)
@@ -200,15 +270,44 @@ public class GameController : MonoBehaviour
                 {
                     inputBuffer.Enqueue(new Vector3(0, Mathf.Sign(touchDif.y), 0));
                 }
+
             }
         }
 
         // input action
         if (inputBuffer.Count > 0 && (Time.time - lastInputTime > UserConfig.animationSpeed * 1.2))
         {
-            //Debug.Log("Input!");
+
+            // reset last input
             lastInputTime = Time.time;
-            MovePlayers(inputBuffer.Dequeue());
+
+            // get the move
+            Vector3 move = inputBuffer.Dequeue();
+
+            // it is an undo move
+            if (move.z == -1)
+            {
+                Debug.Log("IT IS AN UNDO MOVE");
+                UndoMove();
+            }
+            else
+            {
+
+                // move players and count move
+                // check if they could move
+                if (MovePlayers(move))
+                {
+                    substractMove();
+
+                    // history
+                    movesCount++;
+                    undoesToAd = 200; // -----------------------CHANGE THAT TO 2
+                    undoButton.interactable = true;
+                }
+                else
+                    foreach (GameObject lb in lightBuibs)
+                        lb.GetComponent<PlayerController>().PopMove();
+            }
         }
 
         // check if game state is won (all bulbs have reached the goal)
@@ -231,7 +330,7 @@ public class GameController : MonoBehaviour
             LevelsController.changeMedal(SceneLoader.levelNum, currentMedal.type);
             PauseMenu.Instance.Win(currentMedal.type);
         }
-        else if (moves < 1)
+        else if (movesLeft < 1)
         {
             gameState = eGameState.Lose;
             AudioManager.Instance.PlaySound(AudioManager.eSound.Lose);

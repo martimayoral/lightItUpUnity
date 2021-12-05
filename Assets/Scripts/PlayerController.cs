@@ -27,12 +27,15 @@ public class PlayerController : MonoBehaviour
 
     [HideInInspector]
     public bool goalReached;
+    Vector3Int goalReachedPos;
     [HideInInspector]
     public Sprite[] sprites; // where sprites from player will be stored
     int spriteNum;
     int spriteRenderNum;
     public SpriteRenderer spriteRenderer;
 
+    // history
+    Stack<Vector3> movesHistory;
 
     public void reset()
     {
@@ -41,6 +44,8 @@ public class PlayerController : MonoBehaviour
         transform.position = initalPosition;
         mapPosition = LevelManager.Instance.tilemap.WorldToCell(initalPosition);
         goalReached = false;
+
+        movesHistory.Clear();
     }
 
     // Start is called before the first frame update
@@ -51,8 +56,10 @@ public class PlayerController : MonoBehaviour
         coliderTile = Resources.Load<LevelTile>("LevelTiles/Ground");
 
         initalPosition = transform.position;
-        reset();
 
+        movesHistory = new Stack<Vector3>();
+
+        reset();
     }
 
     private void OnEnable()
@@ -94,6 +101,7 @@ public class PlayerController : MonoBehaviour
     public void clearMovement()
     {
         moveState = moveStates.NoMoved;
+        mapPosition = LevelManager.Instance.tilemap.WorldToCell(transform.position);
     }
 
     // returns the player that is in the cell position if there is any
@@ -148,23 +156,29 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        // victory
-        if (!goalReached)
-            if (LevelManager.Instance.tilemap.GetTile(mapTilePos) == goalTile)
-            {
-                goalReached = true;
-                spriteNum = 4;
-                LevelManager.Instance.tilemap.SetTile(mapTilePos, goalDoneTile);
-            }
-
+        // update map position (used by the colision system)
         mapPosition = LevelManager.Instance.tilemap.WorldToCell(moveToPosition);
+
         moveState = moveStates.Moved;
     }
 
     // solve position problems if needed
-    public void fixPosition()
+    //  public void fixPosition()
+    //  {
+    //      transform.position = LevelManager.Instance.tilemap.CellToWorld(mapPosition) + new Vector3(0.5f, 0.5f);
+    //  }
+
+    void MakeMoveToPosition(Vector3 position)
     {
-        transform.position = LevelManager.Instance.tilemap.CellToWorld(mapPosition) + new Vector3(0.5f, 0.5f);
+        //Move
+        LeanTween.move(gameObject, position, UserConfig.animationSpeed)
+            .setEaseInOutSine();
+
+        // move sprite effect
+        if (position.x > transform.position.x + .1f)
+            StartCoroutine(moveEffect(spriteDirections.Right));
+        else if (position.x + .1f < transform.position.x)
+            StartCoroutine(moveEffect(spriteDirections.Left));
     }
 
     public void Move(Vector3 translation)
@@ -175,15 +189,29 @@ public class PlayerController : MonoBehaviour
 
         if (moveState == moveStates.Moved)
         {
-            //Move
-            LeanTween.move(gameObject, moveToPosition, UserConfig.animationSpeed)
-                .setEaseInOutSine();
+            //Debug.Log("PLAYER MOVE");
 
-            if (moveToPosition.x > transform.position.x + .1f)
-                StartCoroutine(moveEffect(spriteDirections.Right));
-            else if (moveToPosition.x + .1f < transform.position.x)
-                StartCoroutine(moveEffect(spriteDirections.Left));
+            // check if goal reached
+            Vector3Int mapTilePos = LevelManager.Instance.tilemap.WorldToCell(moveToPosition);
 
+            bool goalReachedNow = false;
+
+            if (!goalReached)
+                if (LevelManager.Instance.tilemap.GetTile(mapTilePos) == goalTile)
+                {
+                    goalReached = true;
+                    goalReachedPos = mapTilePos;
+                    spriteNum = 4; // light on sprite
+                    LevelManager.Instance.tilemap.SetTile(mapTilePos, goalDoneTile);
+
+                    goalReachedNow = true;
+                }
+
+            // Commit the movement
+            MakeMoveToPosition(moveToPosition);
+
+            // add to history their previous position, we use z of vector3 to show if the goal was reached in that movement
+            movesHistory.Push(new Vector3(transform.position.x, transform.position.y, goalReachedNow ? 1f : 0f));
         }
         if (moveState == moveStates.Collided)
         {
@@ -191,6 +219,9 @@ public class PlayerController : MonoBehaviour
             float speed = UserConfig.animationSpeed * 0.5f;
             LeanTween.move(gameObject, transform.position + translation * 0.1f, speed);
             LeanTween.move(gameObject, transform.position, speed).setDelay(speed);
+
+            // add to history
+            movesHistory.Push(new Vector3(0, 0, -1)); // z=-1 to show to the history that no move was done
         }
 
     }
@@ -205,5 +236,36 @@ public class PlayerController : MonoBehaviour
         spriteNum += 8 * ((int)direction);
         yield return new WaitForSeconds(UserConfig.animationSpeed);
         spriteNum -= 8 * ((int)direction);
+    }
+
+    public void UndoMove()
+    {
+        if (movesHistory.Count == 0) return;
+
+        Vector3 move = movesHistory.Pop();
+
+        Debug.Log("Undoing move: " + move.ToString());
+
+        if (goalReached && move.z == 1)
+        {
+            Debug.Log("UNDOING GOAL");
+
+            move.z = 0;
+            goalReached = false;
+            LevelManager.Instance.tilemap.SetTile(goalReachedPos, goalTile);
+            spriteNum = 0;
+        }
+
+        if (move.z == 0)
+        {
+            Debug.Log("MOVING UNDO: " + move.ToString());
+            MakeMoveToPosition(move);
+        }
+    }
+
+    public void PopMove()
+    {
+        Vector3 move = movesHistory.Pop();
+        Debug.Log("Popping move: " + move);
     }
 }

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class PauseMenu : MonoBehaviour
 {
@@ -12,6 +13,7 @@ public class PauseMenu : MonoBehaviour
 
     public Button getMoreMovesButton;
     public Button nextLevelButton;
+    public TextMeshProUGUI nextLevelText;
 
     static public PauseMenu Instance { get; private set; }
 
@@ -98,7 +100,14 @@ public class PauseMenu : MonoBehaviour
         Debug.Log("WIN...");
 
         animator.SetTrigger("Win");
-        winStarsImage.sprite = starsSprites[(int) medal];
+        winStarsImage.sprite = starsSprites[(int)medal];
+        Debug.Log("ln + 1: " + (SceneLoader.levelNum + 1));
+        Debug.Log("nlevels: " + LevelsController.nLevels);
+        if (SceneLoader.levelNum + 1 >= LevelsController.nLevels)
+        {
+            nextLevelText.text = "COMMING SOON...";
+            nextLevelButton.interactable = false;
+        }
     }
 
     public void BtnNextLevel()

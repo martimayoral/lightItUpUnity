@@ -31,11 +31,14 @@ public struct sLevel
 // this class is in charge of starting the level and loading it
 public class LevelManager : MonoBehaviour
 {
-    public GameObject gameController;
     public static LevelManager Instance;
     private void Awake()
     {
         Instance = this;
+        tilemap = GameObject.FindObjectOfType<Tilemap>();
+        levelNum = SceneLoader.levelNum;
+        print($"Loading Level {levelNum}");
+        LoadMap();
     }
 
     public Tilemap tilemap;
@@ -47,13 +50,6 @@ public class LevelManager : MonoBehaviour
     [SerializeField] Transform playerPrefab;
 
 
-    public void Start()
-    {
-        tilemap = GameObject.FindObjectOfType<Tilemap>();
-        levelNum = SceneLoader.levelNum;
-        LoadMap();
-        print($"Loading Level {levelNum}");
-    }
 
 #if UNITY_EDITOR
     public void SaveMap()
@@ -101,6 +97,14 @@ public class LevelManager : MonoBehaviour
         }
 
     }
+
+    public void LoadBase()
+    {
+        int a = levelNum;
+        levelNum = -1;
+        LoadMap(true);
+        levelNum = a;
+    }
 #endif
 
     public void ClearMap()
@@ -113,13 +117,6 @@ public class LevelManager : MonoBehaviour
         }
     }
 
-    public void LoadBase()
-    {
-        int a = levelNum;
-        levelNum = -1;
-        LoadMap(true);
-        levelNum = a;
-    }
 
 
     public void LoadMap(bool editing = false)
@@ -180,7 +177,6 @@ public class LevelManager : MonoBehaviour
 
 
         }
-        gameController.SetActive(true);
 
         setGoalTiles();
 
@@ -235,14 +231,10 @@ public class LevelManager : MonoBehaviour
         foreach (GameObject player in GameObject.FindGameObjectsWithTag("Player"))
             player.GetComponent<PlayerController>().reset();
 
-        gameController.GetComponent<GameController>().resetGame();
+        GameController.Instance.resetGame();
         setGoalTiles();
     }
 
-    public void NextLevel()
-    {
-        levelNum++;
-    }
 
 }
 
