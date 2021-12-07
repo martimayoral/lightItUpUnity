@@ -15,7 +15,7 @@ public class SliderControler : MonoBehaviour
     public eSliders slider;
 
     // Start is called before the first frame update
-    void Awake()
+    void Start()
     {
         switch (slider)
         {
@@ -29,7 +29,7 @@ public class SliderControler : MonoBehaviour
                 break;
             case eSliders.AnimationSpeed:
                 Debug.Log("seting animation: " + ((1f - UserConfig.animationSpeed) * 10f));
-                gameObject.GetComponent<Slider>().value = (1f - UserConfig.animationSpeed) * 10f;
+                gameObject.GetComponent<Slider>().value = (.5f - UserConfig.animationSpeed) * 20f;
                 break;
             default:
                 Debug.LogError("Slider was not set");
@@ -50,7 +50,7 @@ public class SliderControler : MonoBehaviour
                 AudioManager.Instance.updateSoundVolume();
                 break;
             case eSliders.AnimationSpeed:
-                UserConfig.animationSpeed = 1f - (val / 10f);
+                UserConfig.animationSpeed = .5f - (val / 20f);
                 Debug.Log("New animation speed: " + UserConfig.animationSpeed);
                 break;
             default:

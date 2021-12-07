@@ -52,13 +52,12 @@ public static class LevelsController
 
     public static void changeMedal(int level, medalType medalType)
     {
-        if (levelMedals[level] >= medalType)
+        if (medalType != medalType.none && levelMedals[level] >= medalType)
             return;
 
         levelMedals[level] = medalType;
 
-        if (medalType != medalType.none)
-            lastLevelCompleted = Mathf.Max(level, lastLevelCompleted);
+        lastLevelCompleted = Mathf.Max(level, lastLevelCompleted);
 
         SaveSystem.SaveLevelsData();
     }

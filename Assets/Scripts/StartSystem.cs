@@ -13,6 +13,7 @@ public class StartSystem : MonoBehaviour
     IEnumerator LoadData()
     {
         LevelsController.LoadData();
+        SaveUserConfig.LoadUserConfigData();
 
         yield return new WaitForSeconds(2.0f);
 

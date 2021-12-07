@@ -16,4 +16,9 @@ public class MenuController : MonoBehaviour
         AudioManager.Instance.PlaySound(AudioManager.eSound.Select);
         animator.SetTrigger(triger);
     }
+
+    public void BtnSaveUserConfig()
+    {
+        SaveUserConfig.SaveUserConfigData();
+    }
 }

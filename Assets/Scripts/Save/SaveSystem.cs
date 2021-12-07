@@ -23,7 +23,7 @@ public class LevelsData
 
 public static class SaveSystem
 {
-    readonly static string path = Application.persistentDataPath + "medals.save";
+    readonly static string path = Application.persistentDataPath + "/levelsData.save";
 
     public static void SaveLevelsData ()
     {

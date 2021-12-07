@@ -30,7 +30,7 @@ public class GameController : MonoBehaviour
     public static eGameState gameState;
 
     // back moves
-    int movesCount;
+    public int movesCount { get; private set; }
     public Button undoButton;
     static int undoesToAd;
 
@@ -301,7 +301,7 @@ public class GameController : MonoBehaviour
 
                     // history
                     movesCount++;
-                    undoesToAd = 200; // -----------------------CHANGE THAT TO 2
+                    undoesToAd = 2;
                     undoButton.interactable = true;
                 }
                 else
