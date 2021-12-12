@@ -26,7 +26,7 @@ public class LevelManagerEditor : Editor
 
         if (GUILayout.Button("Load Map"))
         {
-            script.LoadMap(true);
+            script.LoadMap(script.levelNum, true);
         }
 
     }

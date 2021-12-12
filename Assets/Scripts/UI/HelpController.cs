@@ -48,7 +48,7 @@ public class HelpController : MonoBehaviour
         switch (SceneLoader.levelNum)
         {
             case 1:
-                helpTexts.Add(0, new sHelpMsg(centeredText, eHelpAction.Begin, "All light bulbs move at the same time"));
+                helpTexts.Add(0, new sHelpMsg(centeredText, eHelpAction.Begin, "Drag -> to move all light bulbs"));
                 helpTexts.Add(5, new sHelpMsg(eHelpAction.Clear));
                 break;
             case 2:

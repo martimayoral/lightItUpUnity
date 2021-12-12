@@ -20,7 +20,7 @@ public enum eGameState
 public class GameController : MonoBehaviour
 {
     // device touch
-    public Vector2 initialTouch;
+    Vector2 initialTouch;
 
     // the players
     public static GameObject[] lightBuibs { get; private set; }
@@ -59,6 +59,8 @@ public class GameController : MonoBehaviour
     Queue<Vector3> inputBuffer;
     float lastInputTime = 0.0f;
 
+    // editor
+    public bool editing;
 
     static public GameController Instance { get; private set; }
 
@@ -92,11 +94,18 @@ public class GameController : MonoBehaviour
         //foreach()
     }
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        Debug.Log("Start Game Controller");
 
+    public void DestoyPlayers()
+    {
+        foreach (var lb in lightBuibs)
+        {
+            Destroy(lb);
+        }
+        lightBuibs = null;
+    }
+
+    public void HardResetGame()
+    {
         // get the players that the level manager has instanciated
         lightBuibs = GameObject.FindGameObjectsWithTag("Player");
 
@@ -105,11 +114,23 @@ public class GameController : MonoBehaviour
         medals[(int)medalType.silver].moves = LevelManager.Instance.scores.silverMoves;
         medals[(int)medalType.bronze].moves = LevelManager.Instance.scores.bronzeMoves;
 
+        resetGame();
+    }
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        Debug.Log("Start Game Controller");
+
         // sprites
         medalSprites = Resources.LoadAll<Sprite>("Other/Stars");
 
-        // set the initial text values and color
-        resetGame();
+        // load level -------------------- MOVE TO ANOTHER COMPONENT WITHOUT EDITING
+        if (!editing)
+            LevelManager.Instance.LoadMap(SceneLoader.levelNum);
+
+        // start all objects and values
+        HardResetGame();
     }
 
 
@@ -134,7 +155,8 @@ public class GameController : MonoBehaviour
             undoesToAd--;
             if (undoesToAd == 0)
             {
-                AdsManager.Instance.PlayAdd();
+                if (AdsManager.Instance)
+                    AdsManager.Instance.PlayAdd();
             }
         }
 
@@ -323,20 +345,21 @@ public class GameController : MonoBehaviour
         }
         if (winState)
         {
+            Debug.Log("YOU WON");
+
             gameState = eGameState.Win;
             AudioManager.Instance.PlaySound(AudioManager.eSound.Win);
 
-            Debug.Log("WON! Level: " + SceneLoader.levelNum + ", medal: " + currentMedal.type);
-            LevelsController.changeMedal(SceneLoader.levelNum, currentMedal.type);
-            PauseMenu.Instance.Win(currentMedal.type);
+            gameObject.SendMessage("Win", currentMedal.type);
         }
         else if (movesLeft < 1)
         {
+            Debug.Log("YOU LOST");
+
             gameState = eGameState.Lose;
             AudioManager.Instance.PlaySound(AudioManager.eSound.Lose);
 
-            Debug.Log("YOU LOST");
-            PauseMenu.Instance.Lose();
+            gameObject.SendMessage("Lose");
         }
     }
 }

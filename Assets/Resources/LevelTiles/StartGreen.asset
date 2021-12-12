@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: StartGreen
   m_EditorClassIdentifier: 
   m_AnimatedSprites:
-  - {fileID: -6579668011718190995, guid: feb1c0db483473a48afa90ffc4c84c69, type: 3}
+  - {fileID: 21300000, guid: 2e49ff13f373f7c47b3855c2b797262d, type: 3}
   m_MinSpeed: 1
   m_MaxSpeed: 1
   m_AnimationStartTime: 0

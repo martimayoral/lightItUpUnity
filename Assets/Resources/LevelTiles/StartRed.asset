@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: StartRed
   m_EditorClassIdentifier: 
   m_AnimatedSprites:
-  - {fileID: -4535616692840425074, guid: feb1c0db483473a48afa90ffc4c84c69, type: 3}
+  - {fileID: 21300000, guid: 328f75de33d3b7a4abff50e807a083fc, type: 3}
   m_MinSpeed: 1
   m_MaxSpeed: 1
   m_AnimationStartTime: 0

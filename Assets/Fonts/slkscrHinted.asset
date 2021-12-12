@@ -102,9 +102,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 71c1514a6bd24e1e882cebbe1904ce04, type: 3}
   m_Name: slkscrHinted
   m_EditorClassIdentifier: 
-  hashCode: 0
+  hashCode: -463649364
   material: {fileID: -4790906607692228592}
-  materialHashCode: 0
+  materialHashCode: 1678862092
   m_Version: 1.1.0
   m_SourceFontFileGUID: 23dbc890b211ca043aa9a6cdcb5beaf6
   m_SourceFontFile_EditorRef: {fileID: 12800000, guid: 23dbc890b211ca043aa9a6cdcb5beaf6, type: 3}

@@ -18,6 +18,7 @@ public struct SavedTile
 public struct Scores
 {
     public int startingMoves, goldMoves, silverMoves, bronzeMoves;
+    public enum scoreType { startingMoves, goldMoves, silverMoves, bronzeMoves }
 }
 
 public struct sLevel
@@ -36,13 +37,10 @@ public class LevelManager : MonoBehaviour
     {
         Instance = this;
         tilemap = GameObject.FindObjectOfType<Tilemap>();
-        levelNum = SceneLoader.levelNum;
-        print($"Loading Level {levelNum}");
-        LoadMap();
     }
 
     public Tilemap tilemap;
-    public int levelNum;
+
     public Scores scores;
 
     List<SavedTile> goalTiles;
@@ -52,21 +50,11 @@ public class LevelManager : MonoBehaviour
 
 
 #if UNITY_EDITOR
+    public int levelNum;
+
     public void SaveMap()
     {
-        sLevel newLevel = new sLevel()
-        {
-            levelName = $"Level {levelNum}",
-            levelIndex = levelNum,
-            tiles = GetTilesFromMap(tilemap).ToList(),
-            score = new Scores()
-            {
-                startingMoves = scores.startingMoves,
-                goldMoves = scores.goldMoves,
-                silverMoves = scores.silverMoves,
-                bronzeMoves = scores.bronzeMoves
-            }
-        };
+        sLevel newLevel = TileMapUtils.CreateLevel($"Level {levelNum}", levelNum, tilemap, scores);
 
         var levelFile = ScriptableObject.CreateInstance<ScriptableLevel>();
 
@@ -77,35 +65,15 @@ public class LevelManager : MonoBehaviour
 
         ScriptableObjectUnity.SaveLevelFile(levelFile);
 
-
         Debug.Log("Level Saved! :)");
-
-        IEnumerable<SavedTile> GetTilesFromMap(Tilemap map)
-        {
-            foreach (var pos in map.cellBounds.allPositionsWithin)
-            {
-                if (map.HasTile(pos))
-                {
-                    var levelTile = map.GetTile<LevelTile>(pos);
-                    yield return new SavedTile()
-                    {
-                        position = new Vector2Int(pos.x, pos.y),
-                        tile = (int)levelTile.type
-                    };
-                }
-            }
-        }
-
     }
+#endif
+
 
     public void LoadBase()
     {
-        int a = levelNum;
-        levelNum = -1;
-        LoadMap(true);
-        levelNum = a;
+        LoadMap(-1, true);
     }
-#endif
 
     public void ClearMap()
     {
@@ -117,34 +85,26 @@ public class LevelManager : MonoBehaviour
         }
     }
 
-
-
-    public void LoadMap(bool editing = false)
+    public void LoadMap(sLevel level, bool editing)
     {
-        goalTiles = new List<SavedTile>();
-
-        // locate file from resources
-        var levelFile = Resources.Load<ScriptableLevel>($"Levels/Level {levelNum}");
-        if (levelFile == null)
-        {
-            Debug.LogError($"Level { levelNum} does not exist");
-            return;
-        }
-
         ClearMap();
-
-        sLevel level = JsonUtility.FromJson<sLevel>(levelFile.jsonFile);
+        goalTiles.Clear();
 
         scores = level.score;
-        levelNum = level.levelIndex;
 
+        TileType type;
         foreach (var savedTile in level.tiles)
         {
-            switch ((TileType)savedTile.tile)
+            type = (TileType)savedTile.tile;
+            switch (type)
             {
-                case TileType.BaseWall:
-                    setTile(savedTile.position, Resources.Load<LevelTile>("LevelTiles/Ground"));
+                case TileType.BlockedBaseWall:
+                    if (editing)
+                        TileMapUtils.SetTile(tilemap, savedTile.position, TileType.BlockedBaseWall);
+                    else
+                        TileMapUtils.SetTile(tilemap, savedTile.position, TileType.BaseWall);
                     break;
+
                 case TileType.GoalBlue:
                 case TileType.GoalRed:
                 case TileType.GoalGreen:
@@ -153,36 +113,42 @@ public class LevelManager : MonoBehaviour
 
                 // this ones spawn and move the players
                 case TileType.Green:
-                    if (editing)
-                        setTile(savedTile.position, Resources.Load<LevelTile>("LevelTiles/StartGreen"));
-                    else
-                        spawnAndMovePlayer(savedTile.position, "Green");
-                    break;
                 case TileType.Blue:
-                    if (editing)
-                        setTile(savedTile.position, Resources.Load<LevelTile>("LevelTiles/StartBlue"));
-                    else
-                        spawnAndMovePlayer(savedTile.position, "Blue");
-                    break;
                 case TileType.Red:
                     if (editing)
-                        setTile(savedTile.position, Resources.Load<LevelTile>("LevelTiles/StartRed"));
+                        TileMapUtils.SetTile(tilemap, savedTile.position, type);
                     else
-                        spawnAndMovePlayer(savedTile.position, "Red");
+                        spawnAndMovePlayer(savedTile.position, type);
                     break;
 
-
-                default: throw new System.ArgumentOutOfRangeException();
+                default:
+                    TileMapUtils.SetTile(tilemap, savedTile.position, type);
+                    break;
             }
-
-
         }
 
         setGoalTiles();
 
-
-        void spawnAndMovePlayer(Vector2Int tilePos, string name)
+        void spawnAndMovePlayer(Vector2Int tilePos, TileType type)
         {
+            string name;
+
+            switch (type)
+            {
+                case TileType.Red:
+                    name = "Red";
+                    break;
+                case TileType.Blue:
+                    name = "Blue";
+                    break;
+                case TileType.Green:
+                    name = "Green";
+                    break;
+                default:
+                    Debug.LogError("Type " + type + " can't be a player");
+                    return;
+            }
+
             print("Spawn and move " + name);
 
             PlayerController pc =
@@ -194,36 +160,43 @@ public class LevelManager : MonoBehaviour
                 .GetComponent<PlayerController>();
 
             pc.goalTile = Resources.Load<LevelTile>("LevelTiles/Goal" + name);
-            pc.goalDoneTile = Resources.Load<LevelTile>("LevelTiles/Start" + name);
+            pc.goalDoneTile = Resources.Load<LevelTile>("LevelTiles/GoalDone" + name);
 
             pc.sprites = Resources.LoadAll<Sprite>("Sprites/" + name);
-
         }
 
-        Debug.Log($"{levelNum} Loaded! :)");
+        Debug.Log($"Level Loaded! :)");
     }
 
-    void setTile(Vector2Int tilePos, TileBase tile)
+    public void LoadMap(int lvlNum, bool editing = false)
     {
-        tilemap.SetTile(new Vector3Int(tilePos.x, tilePos.y, 0), tile);
+        print($"Loading Level {lvlNum}");
+
+        goalTiles = new List<SavedTile>();
+
+        // locate file from resources
+        var levelFile = Resources.Load<ScriptableLevel>($"Levels/Level {lvlNum}");
+        if (levelFile == null)
+        {
+            Debug.LogError($"Level {lvlNum} does not exist");
+            return;
+        }
+
+        sLevel level = JsonUtility.FromJson<sLevel>(levelFile.jsonFile);
+
+        Debug.Assert(lvlNum == level.levelIndex);
+
+        LoadMap(level, editing);
+
+        Debug.Log($"{lvlNum} Loaded! :)");
     }
+
 
     private void setGoalTiles()
     {
         foreach (SavedTile savedTile in goalTiles)
-            switch ((TileType)savedTile.tile)
-            {
-                case TileType.GoalBlue:
-                    setTile(savedTile.position, Resources.Load<LevelTile>("LevelTiles/GoalBlue"));
-                    break;
-                case TileType.GoalRed:
-                    setTile(savedTile.position, Resources.Load<LevelTile>("LevelTiles/GoalRed"));
-                    break;
-                case TileType.GoalGreen:
-                    setTile(savedTile.position, Resources.Load<LevelTile>("LevelTiles/GoalGreen"));
-                    break;
-                default: throw new System.ArgumentOutOfRangeException();
-            }
+            TileMapUtils.SetTile(tilemap, savedTile.position, (TileType)savedTile.tile);
+
     }
 
     public void RestartLevel()

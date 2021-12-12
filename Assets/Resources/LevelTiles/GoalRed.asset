@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: GoalRed
   m_EditorClassIdentifier: 
   m_AnimatedSprites:
-  - {fileID: 7200355070117391343, guid: feb1c0db483473a48afa90ffc4c84c69, type: 3}
-  - {fileID: -6424115951104800999, guid: feb1c0db483473a48afa90ffc4c84c69, type: 3}
-  - {fileID: 4635516954801625949, guid: feb1c0db483473a48afa90ffc4c84c69, type: 3}
+  - {fileID: 6007627129536956325, guid: f00e744daab8141458068bb4419ba106, type: 3}
+  - {fileID: -7486092956772349302, guid: f00e744daab8141458068bb4419ba106, type: 3}
+  - {fileID: -3627264120405484348, guid: f00e744daab8141458068bb4419ba106, type: 3}
   m_MinSpeed: 5
   m_MaxSpeed: 5
   m_AnimationStartTime: 0

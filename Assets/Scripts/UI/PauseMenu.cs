@@ -6,7 +6,7 @@ using TMPro;
 
 public class PauseMenu : MonoBehaviour
 {
-    Animator animator;
+    public Animator animator;
 
     public Image winStarsImage;
     private Sprite[] starsSprites;
@@ -27,7 +27,6 @@ public class PauseMenu : MonoBehaviour
     {
         starsSprites = Resources.LoadAll<Sprite>("Other/Stars");
         getMoreMovesButton.interactable = true;
-        animator = GetComponent<Animator>();
     }
 
     void PlayBtnSelect()
@@ -50,8 +49,6 @@ public class PauseMenu : MonoBehaviour
 
     public void Resume()
     {
-        animator = GetComponent<Animator>();
-
         Time.timeScale = 1f;
         Debug.Log("RESUMING...");
         animator.SetTrigger("Resume");
@@ -98,6 +95,7 @@ public class PauseMenu : MonoBehaviour
     public void Win(medalType medal)
     {
         Debug.Log("WIN...");
+        LevelsController.changeMedal(SceneLoader.levelNum, medal);
 
         animator.SetTrigger("Win");
         winStarsImage.sprite = starsSprites[(int)medal];
@@ -130,4 +128,5 @@ public class PauseMenu : MonoBehaviour
         PauseMenu.Instance.Resume();
         getMoreMovesButton.interactable = false;
     }
+
 }
