@@ -142,6 +142,7 @@ public class GameController : MonoBehaviour
     void UndoMove()
     {
         Debug.Log("Undo (moves done: " + movesCount);
+        AudioManager.Instance.PlaySound(AudioManager.eSound.MoveReverse);
 
         if (movesCount > 0)
         {

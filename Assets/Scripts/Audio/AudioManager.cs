@@ -12,7 +12,8 @@ public class AudioManager : MonoBehaviour
         Move,
         NoMove,
         Win,
-        Lose
+        Lose,
+        MoveReverse
     }
 
     public Sound[] sounds;
@@ -59,6 +60,10 @@ public class AudioManager : MonoBehaviour
         {
             Debug.LogWarning("Sound " + sound + " not found!");
             return;
+        }
+        else
+        {
+            Debug.LogWarning("Playing sound " + sound);
         }
 
         dSounds[sound].source.Play();

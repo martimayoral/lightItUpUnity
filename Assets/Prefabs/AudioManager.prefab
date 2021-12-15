@@ -53,23 +53,23 @@ MonoBehaviour:
     source: {fileID: 0}
   - isMusic: 0
     name: 1
-    clip: {fileID: 8300000, guid: b6a17ecd9bf1a4947b6ceee66edf64c1, type: 3}
+    clip: {fileID: 8300000, guid: 89712032041c289439192db25501be6f, type: 3}
     volume: 0.5
     pitch: 1.5
     loop: 0
     source: {fileID: 0}
   - isMusic: 0
     name: 2
-    clip: {fileID: 8300000, guid: 45fcc83222ae9b94ea227ab918930c12, type: 3}
+    clip: {fileID: 8300000, guid: b6a17ecd9bf1a4947b6ceee66edf64c1, type: 3}
     volume: 0.5
     pitch: 1.5
     loop: 0
     source: {fileID: 0}
   - isMusic: 0
-    name: 4
-    clip: {fileID: 8300000, guid: b1c2c5f774832554698b8d0aec6f0eed, type: 3}
-    volume: 1
-    pitch: 1.5
+    name: 6
+    clip: {fileID: 8300000, guid: b6a17ecd9bf1a4947b6ceee66edf64c1, type: 3}
+    volume: 0.5
+    pitch: 0.7
     loop: 0
     source: {fileID: 0}
   - isMusic: 0
@@ -81,8 +81,15 @@ MonoBehaviour:
     source: {fileID: 0}
   - isMusic: 0
     name: 3
-    clip: {fileID: 8300000, guid: 89712032041c289439192db25501be6f, type: 3}
+    clip: {fileID: 8300000, guid: 45fcc83222ae9b94ea227ab918930c12, type: 3}
     volume: 0.75
+    pitch: 1.5
+    loop: 0
+    source: {fileID: 0}
+  - isMusic: 0
+    name: 4
+    clip: {fileID: 8300000, guid: b1c2c5f774832554698b8d0aec6f0eed, type: 3}
+    volume: 1
     pitch: 1.5
     loop: 0
     source: {fileID: 0}
