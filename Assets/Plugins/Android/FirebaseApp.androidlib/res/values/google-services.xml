@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:keep="@string/firebase_database_url,@string/gcm_defaultSenderId,@string/google_storage_bucket,@string/project_id,@string/google_api_key,@string/google_crash_reporting_api_key,@string/google_app_id,@string/default_android_client_id,@string/default_web_client_id">
+  <string name="firebase_database_url" translatable="false">https://light-it-up-db-default-rtdb.europe-west1.firebasedatabase.app</string>
+  <string name="gcm_defaultSenderId" translatable="false">116310118033</string>
+  <string name="google_storage_bucket" translatable="false">light-it-up-db.appspot.com</string>
+  <string name="project_id" translatable="false">light-it-up-db</string>
+  <string name="google_api_key" translatable="false">AIzaSyDBNRrGjqMT6mhWP0-7c9khBNXk1IqaLqE</string>
+  <string name="google_crash_reporting_api_key" translatable="false">AIzaSyDBNRrGjqMT6mhWP0-7c9khBNXk1IqaLqE</string>
+  <string name="google_app_id" translatable="false">1:116310118033:android:de9e5038a04eacae13f930</string>
+  <string name="default_android_client_id" translatable="false">116310118033-66p9ca7jo5jlg1cfd5cohbuliie579o3.apps.googleusercontent.com</string>
+  <string name="default_web_client_id" translatable="false">116310118033-hv65tke28810s5gaqava2kemp1n9em10.apps.googleusercontent.com</string>
+</resources>

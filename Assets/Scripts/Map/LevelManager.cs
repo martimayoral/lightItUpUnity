@@ -27,6 +27,7 @@ public struct sLevel
     public int levelIndex;
     public List<SavedTile> tiles;
     public Scores score;
+    public eLevelSize levelSize;
 }
 
 // this class is in charge of starting the level and loading it
@@ -43,6 +44,8 @@ public class LevelManager : MonoBehaviour
 
     public Scores scores;
 
+    public eLevelSize levelSize;
+
     List<SavedTile> goalTiles;
 
     [SerializeField] Transform playerPrefab;
@@ -54,7 +57,7 @@ public class LevelManager : MonoBehaviour
 
     public void SaveMap()
     {
-        sLevel newLevel = TileMapUtils.CreateLevel($"Level {levelNum}", levelNum, tilemap, scores);
+        sLevel newLevel = TileMapUtils.CreateLevel($"Level {levelNum}", levelNum, tilemap, scores, levelSize);
 
         var levelFile = ScriptableObject.CreateInstance<ScriptableLevel>();
 
@@ -72,7 +75,8 @@ public class LevelManager : MonoBehaviour
 
     public void LoadBase()
     {
-        LoadMap(-1, true);
+        ClearMap();
+        TileMapUtils.LoadMapBorders(tilemap, true, levelSize);
     }
 
     public void ClearMap()
@@ -83,14 +87,18 @@ public class LevelManager : MonoBehaviour
         {
             map.ClearAllTiles();
         }
+
+        goalTiles.Clear();
     }
 
     public void LoadMap(sLevel level, bool editing)
     {
         ClearMap();
-        goalTiles.Clear();
+
+        TileMapUtils.LoadMapBorders(tilemap, editing, level.levelSize);
 
         scores = level.score;
+        levelSize = level.levelSize;
 
         TileType type;
         foreach (var savedTile in level.tiles)
@@ -99,10 +107,7 @@ public class LevelManager : MonoBehaviour
             switch (type)
             {
                 case TileType.BlockedBaseWall:
-                    if (editing)
-                        TileMapUtils.SetTile(tilemap, savedTile.position, TileType.BlockedBaseWall);
-                    else
-                        TileMapUtils.SetTile(tilemap, savedTile.position, TileType.BaseWall);
+                    TileMapUtils.SetTile(tilemap, savedTile.position, TileType.BaseWall);
                     break;
 
                 case TileType.GoalBlue:

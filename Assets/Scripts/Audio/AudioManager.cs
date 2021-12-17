@@ -63,7 +63,7 @@ public class AudioManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("Playing sound " + sound);
+            Debug.Log("Playing sound " + sound);
         }
 
         dSounds[sound].source.Play();

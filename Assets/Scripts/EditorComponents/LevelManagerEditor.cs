@@ -28,7 +28,6 @@ public class LevelManagerEditor : Editor
         {
             script.LoadMap(script.levelNum, true);
         }
-
     }
 
 
