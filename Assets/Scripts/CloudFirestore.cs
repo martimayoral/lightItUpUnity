@@ -2,16 +2,19 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Firebase.Firestore;
+using Firebase.Extensions;
+using System.Linq;
+using System;
 
 public class CloudFirestore : MonoBehaviour
 {
     FirebaseFirestore db;
     Dictionary<string, object> user;
-    public static CloudFirestore i;
+    public static CloudFirestore Instance;
 
     private void Awake()
     {
-        i = this;
+        Instance = this;
     }
 
     // Start is called before the first frame update
@@ -60,6 +63,8 @@ public class CloudFirestore : MonoBehaviour
         return new Dictionary<string, object>
         {
             {"Name", slevel.levelName },
+            {"Creator", slevel.creatorName },
+            {"Size", slevel.levelSize},
             {"Scores", new Dictionary<string, object>
                 {
                     {"Starting Moves", slevel.score.startingMoves },
@@ -70,6 +75,61 @@ public class CloudFirestore : MonoBehaviour
             },
             {"Tiles", tiles}
         };
+    }
+
+    sLevel DLevelToSLevel(Dictionary<string, object> dlevel)
+    {
+        Debug.Log("Tranforming level " + (string)dlevel["Name"]);
+
+        Dictionary<string, object> scores = (Dictionary<string, object>)dlevel["Scores"];
+        List<object> tiles = (List<object>)dlevel["Tiles"];
+        List<SavedTile> savedTiles = new List<SavedTile>();
+
+        foreach (object tile in tiles)
+        {
+            Dictionary<string, object> dtile = (Dictionary<string, object>)tile;
+
+            savedTiles.Add(new SavedTile
+            {
+                position = new Vector2Int(Convert.ToInt32(dtile["x"]), Convert.ToInt32(dtile["y"])),
+                tile = Convert.ToInt32(dtile["Type"])
+            });
+        }
+
+        return new sLevel
+        {
+            levelIndex = 0,
+            levelSize = (eLevelSize)Convert.ToInt32(dlevel["Size"]),
+            levelName = Convert.ToString(dlevel["Name"]),
+            creatorName = Convert.ToString(dlevel["Creator"]),
+            score = new Scores
+            {
+                startingMoves = Convert.ToInt32(scores["Starting Moves"]),
+                goldMoves = Convert.ToInt32(scores["Gold Moves"]),
+                silverMoves = Convert.ToInt32(scores["Silver Moves"]),
+                bronzeMoves = Convert.ToInt32(scores["Bronze Moves"]),
+            },
+            tiles = savedTiles
+        };
+    }
+
+    public void DoActionForEachLevelAsync(Action<sLevel> action)
+    {
+        Query allLevelsQuery = db.Collection("Levels");
+        allLevelsQuery.GetSnapshotAsync().ContinueWithOnMainThread(task =>
+        {
+            QuerySnapshot allLevelsQuerySnapshot = task.Result;
+            foreach (DocumentSnapshot documentSnapshot in allLevelsQuerySnapshot.Documents)
+            {
+                Debug.Log(String.Format("Document data for {0} document:", documentSnapshot.Id));
+
+                Dictionary<string, object> dlevel = documentSnapshot.ToDictionary();
+
+                sLevel slevel = DLevelToSLevel(dlevel);
+
+                action.Invoke(slevel);
+            }
+        });
     }
 
     public void SaveLevel(sLevel slevel)
@@ -89,11 +149,5 @@ public class CloudFirestore : MonoBehaviour
                 Debug.Log("not succesfully");
             }
         });
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
     }
 }

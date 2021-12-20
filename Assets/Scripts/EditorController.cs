@@ -56,9 +56,9 @@ public class EditorController : MonoBehaviour
 
         canPublish = false;
 
-        LevelManager.Instance.LoadMap(-1, true);
-
         size = eLevelSize.Small;
+        TileMapUtils.LoadMapBorders(tilemap, true, size);
+
         scores = new Scores() { bronzeMoves = 2, goldMoves = 5, silverMoves = 4, startingMoves = 20 };
         UpdateScoresText();
     }
@@ -122,7 +122,8 @@ public class EditorController : MonoBehaviour
 
     void UpdateSLevel()
     {
-        level = TileMapUtils.CreateLevel("Editor", 0, tilemap, scores, size);
+        level = TileMapUtils.CreateLevel(publishName.text, 0, tilemap, scores, size);
+        level.creatorName = "Creator";
     }
 
     // --- Test game ---
@@ -251,9 +252,13 @@ public class EditorController : MonoBehaviour
     {
         Debug.Log("Trying to publish " + publishName.text);
 
-
         UpdateSLevel();
 
-        CloudFirestore.i.SaveLevel(level);
+        CloudFirestore.Instance.SaveLevel(level);
+    }
+
+    public void BtnLoadMenu()
+    {
+        SceneLoader.Instance.LoadMenu();
     }
 }

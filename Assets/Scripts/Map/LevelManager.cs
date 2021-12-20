@@ -24,6 +24,7 @@ public struct Scores
 public struct sLevel
 {
     public string levelName;
+    public string creatorName;
     public int levelIndex;
     public List<SavedTile> tiles;
     public Scores score;
@@ -38,6 +39,7 @@ public class LevelManager : MonoBehaviour
     {
         Instance = this;
         tilemap = GameObject.FindObjectOfType<Tilemap>();
+        goalTiles = new List<SavedTile>();
     }
 
     public Tilemap tilemap;
@@ -55,7 +57,7 @@ public class LevelManager : MonoBehaviour
 #if UNITY_EDITOR
     public int levelNum;
 
-    public void SaveMap()
+    public void SaveMapInEditor()
     {
         sLevel newLevel = TileMapUtils.CreateLevel($"Level {levelNum}", levelNum, tilemap, scores, levelSize);
 
@@ -69,6 +71,19 @@ public class LevelManager : MonoBehaviour
         ScriptableObjectUnity.SaveLevelFile(levelFile);
 
         Debug.Log("Level Saved! :)");
+    }
+
+    public void LoadMapInEditor(int lvlNum, bool editing = false)
+    {
+        print($"Loading Level {lvlNum}");
+
+        sLevel level = GetSLevelFromFile(lvlNum);
+
+        Debug.Assert(lvlNum == level.levelIndex);
+
+        LoadMap(level, editing);
+
+        Debug.Log($"{lvlNum} Loaded! :)");
     }
 #endif
 
@@ -173,28 +188,19 @@ public class LevelManager : MonoBehaviour
         Debug.Log($"Level Loaded! :)");
     }
 
-    public void LoadMap(int lvlNum, bool editing = false)
+    public static sLevel GetSLevelFromFile(int lvlNum)
     {
-        print($"Loading Level {lvlNum}");
-
-        goalTiles = new List<SavedTile>();
-
         // locate file from resources
         var levelFile = Resources.Load<ScriptableLevel>($"Levels/Level {lvlNum}");
         if (levelFile == null)
         {
             Debug.LogError($"Level {lvlNum} does not exist");
-            return;
+            return new sLevel();
         }
 
-        sLevel level = JsonUtility.FromJson<sLevel>(levelFile.jsonFile);
-
-        Debug.Assert(lvlNum == level.levelIndex);
-
-        LoadMap(level, editing);
-
-        Debug.Log($"{lvlNum} Loaded! :)");
+        return JsonUtility.FromJson<sLevel>(levelFile.jsonFile);
     }
+
 
 
     private void setGoalTiles()

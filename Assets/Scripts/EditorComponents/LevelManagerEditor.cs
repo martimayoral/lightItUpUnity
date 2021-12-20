@@ -16,7 +16,7 @@ public class LevelManagerEditor : Editor
 
         if (GUILayout.Button("Save Map"))
         {
-            script.SaveMap();
+            script.SaveMapInEditor();
         }
 
         if (GUILayout.Button("Clear Map"))
@@ -26,7 +26,7 @@ public class LevelManagerEditor : Editor
 
         if (GUILayout.Button("Load Map"))
         {
-            script.LoadMap(script.levelNum, true);
+            script.LoadMapInEditor(script.levelNum, true);
         }
     }
 

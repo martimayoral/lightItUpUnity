@@ -127,7 +127,7 @@ public class GameController : MonoBehaviour
 
         // load level -------------------- MOVE TO ANOTHER COMPONENT WITHOUT EDITING
         if (!editing)
-            LevelManager.Instance.LoadMap(SceneLoader.levelNum);
+            LevelManager.Instance.LoadMap(SceneLoader.level, editing);
 
         // start all objects and values
         HardResetGame();

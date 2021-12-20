@@ -13,14 +13,21 @@ public class LevelControllerUI : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        if (LevelsController.levelMedals.Length < levelId)
+        if (LevelsController.levelMedals != null)
         {
-            // image.sprite = Resources.LoadAll<Sprite>("Other/Stars")[0];
-            Debug.Log("User medal " + levelId + " not found");
-            return;
-        }
+            if (LevelsController.levelMedals.Length < levelId)
+            {
+                // image.sprite = Resources.LoadAll<Sprite>("Other/Stars")[0];
+                Debug.Log("User medal " + levelId + " not found");
+                return;
+            }
 
-        image.sprite = Resources.LoadAll<Sprite>("Other/Stars")[(int)LevelsController.levelMedals[levelId]];
+            image.sprite = Resources.LoadAll<Sprite>("Other/Stars")[(int)LevelsController.levelMedals[levelId]];
+        }
+        else
+        {
+            Debug.LogWarning("Could not load Level medals");
+        }
 
         locked = LevelsController.lastLevelCompleted + 1 < levelId;
 
