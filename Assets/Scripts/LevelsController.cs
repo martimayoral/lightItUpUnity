@@ -52,12 +52,20 @@ public static class LevelsController
 
     public static void changeMedal(int level, medalType medalType)
     {
-        if (medalType != medalType.none && levelMedals[level] >= medalType)
+        if(level == 0)
+        {
+            Debug.LogWarning("IS THIS EDITOR MODE?");
+        }
+
+        lastLevelCompleted = Mathf.Max(level, lastLevelCompleted);
+
+        if (levelMedals[level] >= medalType)
             return;
+
+        Debug.Log($"Changing medal ({medalType})");
 
         levelMedals[level] = medalType;
 
-        lastLevelCompleted = Mathf.Max(level, lastLevelCompleted);
 
         SaveSystem.SaveLevelsData();
     }

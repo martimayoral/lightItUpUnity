@@ -60,11 +60,11 @@ public class AudioManager : MonoBehaviour
         {
             Debug.LogWarning("Sound " + sound + " not found!");
             return;
-        }
+        }/*
         else
         {
             Debug.Log("Playing sound " + sound);
-        }
+        }*/
 
         dSounds[sound].source.Play();
     }

@@ -7,18 +7,61 @@ public class MenuController : MonoBehaviour
 {
     Animator animator;
 
+    [Header("Level")]
     [SerializeField] Transform levelInfo;
     [SerializeField] Transform levelInfoParent;
+
+    [Header("Settings Panel")]
+    [SerializeField] GameObject loggedInUI;
+    [SerializeField] GameObject logInUI;
+    [SerializeField] Animator settingsPanelAnimator;
+
+    public static MenuController Instance;
+
+    void Awake()
+    {
+        Instance = this;
+    }
 
     private void Start()
     {
         animator = GetComponent<Animator>();
+        UpdateLoggingUI();
     }
 
+    public void ExitApp()
+    {
+        Debug.Log("QUIT");
+        Application.Quit();
+    }
+
+    public void UpdateLoggingUI()
+    {
+        bool loggedIn = AuthController.Instance.isLoggedIn();
+        Debug.Log("Updating logging UI " + (loggedIn ? "(Logged in)" : "(Not Logged in)"));
+        if (loggedIn)
+        {
+            loggedInUI.SetActive(true);
+            logInUI.SetActive(false);
+        }
+        else
+        {
+            loggedInUI.SetActive(false);
+            logInUI.SetActive(true);
+        }
+    }
+    public void SettingsPanelShowInit()
+    {
+        settingsPanelAnimator.SetTrigger("Init");
+    }
     public void BtnLoadLevelEditor()
     {
-
-        SceneLoader.Instance.LoadLevelEditor();
+        if (AuthController.username != null && AuthController.username != "")
+            SceneLoader.Instance.LoadLevelEditor();
+        else
+        {
+            ToastController.Instance.ToastWhite("Log in to create a level");
+        }
     }
 
     public void BtnChangePanel(string triger)

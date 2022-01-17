@@ -9,6 +9,7 @@ public class ToolSelectComponent : MonoBehaviour
     public TileType type;
 }
 
+#if UNITY_EDITOR
 [CustomEditor(typeof(ToolSelectComponent))]
 public class ToolSelectComponentEditor : Editor
 {
@@ -27,3 +28,4 @@ public class ToolSelectComponentEditor : Editor
 
     }
 }
+#endif

@@ -16,27 +16,23 @@ public class AdsManager : MonoBehaviour, IUnityAdsListener
 
     private void Awake()
     {
-        Instance = this;
+        if (Instance == null)
+            Instance = this;
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        DontDestroyOnLoad(gameObject);
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        if (!adsOn)
-            return;
 
         Advertisement.Initialize(gameId);
         Advertisement.AddListener(this);
-
-        ShowBanner();
-    }
-
-    private void OnDestroy()
-    {
-        if (!adsOn)
-            return;
-
-        HideBanner();
     }
 
     public void PlayAdd()

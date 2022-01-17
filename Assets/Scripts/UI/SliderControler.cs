@@ -20,15 +20,12 @@ public class SliderControler : MonoBehaviour
         switch (slider)
         {
             case eSliders.Music:
-                Debug.Log("seting music");
                 gameObject.GetComponent<Slider>().value = UserConfig.musicVolume * 10f;
                 break;
             case eSliders.Sounds:
-                Debug.Log("seting sounds");
                 gameObject.GetComponent<Slider>().value = UserConfig.soundVolume * 10f;
                 break;
             case eSliders.AnimationSpeed:
-                Debug.Log("seting animation: " + ((1f - UserConfig.animationSpeed) * 10f));
                 gameObject.GetComponent<Slider>().value = (.5f - UserConfig.animationSpeed) * 20f;
                 break;
             default:
@@ -44,14 +41,16 @@ public class SliderControler : MonoBehaviour
             case eSliders.Music:
                 UserConfig.musicVolume = val / 10f;
                 AudioManager.Instance.updateMusicVolume();
+                //Debug.Log("New Music Volume speed: " + UserConfig.musicVolume);
                 break;
             case eSliders.Sounds:
                 UserConfig.soundVolume = val / 10f;
                 AudioManager.Instance.updateSoundVolume();
+                //Debug.Log("New Sound Volume speed: " + UserConfig.soundVolume);
                 break;
             case eSliders.AnimationSpeed:
                 UserConfig.animationSpeed = .5f - (val / 20f);
-                Debug.Log("New animation speed: " + UserConfig.animationSpeed);
+                //Debug.Log("New Animation Speed: " + UserConfig.animationSpeed);
                 break;
             default:
                 Debug.LogError("Slider was not set");

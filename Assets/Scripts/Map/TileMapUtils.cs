@@ -181,6 +181,30 @@ public static class TileMapUtils
         }
     }
 
+    public static int CountLBStarts(Tilemap tilemap)
+    {
+        int n = 0;
+        // get all tiles
+
+        BoundsInt bounds = tilemap.cellBounds;
+        TileBase[] allTiles = tilemap.GetTilesBlock(bounds);
+
+
+        foreach (LevelTile tile in tilemap.GetTilesBlock(tilemap.cellBounds))
+        {
+            if (tile != null)
+                switch (tile.type)
+                {
+                    case TileType.GoalRed:
+                    case TileType.GoalBlue:
+                    case TileType.GoalGreen:
+                        n++;
+                        break;
+                }
+        }
+        return n;
+    }
+
     public static void ClearMapBorders(Tilemap tilemap, eLevelSize size)
     {
         LoadMapBorders(tilemap, TileType.None, size);

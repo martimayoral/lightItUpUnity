@@ -37,16 +37,21 @@ public class EditorController : MonoBehaviour
 
     public TextMeshProUGUI exitTitle;
     public TextMeshProUGUI exitSubtitle;
+    public Button exitPublishButton;
+    public Button menuPublishButton;
+    public GameObject leftoverMovements;
+    public TextMeshProUGUI leftoverMovementsText;
 
-    // moves settings
+    [Header("Moves Settings")]
     public TextMeshProUGUI settingsScoresMoves;
     public TextMeshProUGUI settingsScoresGold;
     public TextMeshProUGUI settingsScoresSilver;
     public TextMeshProUGUI settingsScoresBronze;
 
-    // publish
+    [Header("Publish")]
     public TextMeshProUGUI settingsPublishText;
     public TMP_InputField publishName;
+    public TextMeshProUGUI publishingAs;
     public Button settingsPublishButton;
 
     private void Start()
@@ -54,13 +59,39 @@ public class EditorController : MonoBehaviour
         tool = Tool.None;
         tilemap = GameObject.FindObjectOfType<Tilemap>();
 
-        canPublish = false;
+        canPublish = true;
+        DisablePublish();
+        publishingAs.text = "Publishing as " + AuthController.username;
 
         size = eLevelSize.Small;
         TileMapUtils.LoadMapBorders(tilemap, true, size);
 
-        scores = new Scores() { bronzeMoves = 2, goldMoves = 5, silverMoves = 4, startingMoves = 20 };
+        scores = new Scores() { goldMoves = 5, silverMoves = 4, bronzeMoves = 2, startingMoves = 20 };
         UpdateScoresText();
+    }
+
+    public void EnablePublish(bool reduceMovementsOption = false)
+    {
+        if (!canPublish)
+        {
+            canPublish = true;
+            menuPublishButton.interactable = true;
+            exitPublishButton.interactable = true;
+        }
+
+        leftoverMovements.SetActive(reduceMovementsOption);
+    }
+
+    public void DisablePublish()
+    {
+        if (canPublish)
+        {
+            canPublish = false;
+            menuPublishButton.interactable = false;
+            exitPublishButton.interactable = false;
+
+            leftoverMovements.SetActive(false);
+        }
     }
 
     private void Update()
@@ -92,7 +123,7 @@ public class EditorController : MonoBehaviour
 
     void UseTool(Vector3Int tilemapPos, Tool tool)
     {
-        canPublish = false;
+        DisablePublish();
         switch (tool)
         {
             case Tool.Eraser:
@@ -123,7 +154,18 @@ public class EditorController : MonoBehaviour
     void UpdateSLevel()
     {
         level = TileMapUtils.CreateLevel(publishName.text, 0, tilemap, scores, size);
-        level.creatorName = "Creator";
+        level.creatorName = AuthController.username;
+    }
+
+    public void BtnReduceMovesLeftover()
+    {
+        int startingMoves = scores.startingMoves;
+        scores.startingMoves = scores.goldMoves + GameController.Instance.movesCount;
+        LevelManager.Instance.scores.startingMoves = scores.startingMoves;
+
+        GameController.Instance.substractMoves(startingMoves - scores.startingMoves);
+        settingsScoresMoves.text = scores.startingMoves.ToString();
+        leftoverMovements.SetActive(false);
     }
 
     // --- Test game ---
@@ -131,7 +173,14 @@ public class EditorController : MonoBehaviour
     {
         tool = Tool.None;
 
+        if (TileMapUtils.CountLBStarts(tilemap) == 0)
+        {
+            ToastController.Instance.ToastRed("You need to add some light bulb to Play");
+            return;
+        }
+
         UpdateSLevel();
+
 
         LevelManager.Instance.LoadMap(level, false);
 
@@ -147,11 +196,17 @@ public class EditorController : MonoBehaviour
         animatorUI.SetTrigger("playEnd");
         exitTitle.text = "You won!";
         if (medal != medalType.gold)
-            exitSubtitle.text = "You need 3 stars to publish";
+        {
+            exitSubtitle.text = "Well done! but you need 3 stars to publish";
+            DisablePublish();
+        }
         else
         {
             exitSubtitle.text = "You can now publish the game";
-            canPublish = true;
+
+            Debug.Log($"Moves left {gameController.movesLeft}, gold moves {scores.goldMoves} ");
+            EnablePublish(gameController.movesLeft != scores.goldMoves);
+            leftoverMovementsText.text = $"Reduce moves leftover ({GameController.Instance.movesLeft - scores.goldMoves})";
         }
     }
 
@@ -161,6 +216,7 @@ public class EditorController : MonoBehaviour
         animatorUI.SetTrigger("playEnd");
         exitTitle.text = "You lost";
         exitSubtitle.text = "You need 3 stars to publish";
+        DisablePublish();
     }
 
     public void BtnContinueEditing()
@@ -203,6 +259,10 @@ public class EditorController : MonoBehaviour
         {
             case Scores.scoreType.startingMoves:
                 scores.startingMoves += toAdd;
+                if (movesSelectComponent.add)
+                    GameController.Instance.addMove();
+                else
+                    GameController.Instance.substractMove();
                 break;
             case Scores.scoreType.goldMoves:
                 scores.goldMoves += toAdd;
@@ -222,6 +282,13 @@ public class EditorController : MonoBehaviour
         scores.silverMoves = Mathf.Clamp(scores.silverMoves, minMoves, scores.goldMoves);
         scores.bronzeMoves = Mathf.Clamp(scores.bronzeMoves, minMoves, scores.silverMoves);
 
+        GameController.Instance.SetScoreMoves(scores.goldMoves, scores.silverMoves, scores.bronzeMoves);
+        GameController.Instance.UpdateCurrentMedal();
+        GameController.Instance.UpdateMedals();
+
+        LevelManager.Instance.scores = scores;
+
+        DisablePublish();
         UpdateScoresText();
     }
 
@@ -254,7 +321,20 @@ public class EditorController : MonoBehaviour
 
         UpdateSLevel();
 
-        CloudFirestore.Instance.SaveLevel(level);
+        LoadingScreen.Instance.StartFullScreenSpinner();
+
+
+        CloudFirestore.Instance.SaveLevel(level,
+            () =>
+            {
+                // on success
+                animatorUI.SetTrigger("menu");
+                ToastController.Instance.ToastGreen("Level Published!");
+            },
+            () =>
+                // on fail
+                ToastController.Instance.ToastRed("Level failed to upload")
+            );
     }
 
     public void BtnLoadMenu()

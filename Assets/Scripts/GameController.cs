@@ -39,17 +39,17 @@ public class GameController : MonoBehaviour
     public TextMeshProUGUI nextMedalText;
     public Image medalUI;
     Sprite[] medalSprites;
-    int movesLeft;
+    public int movesLeft { get; private set; }
     struct medal
     {
         public medalType type;
         public Color medalColor;
-        public int moves;
+        public int moves; // moves they have to reach
     }
     medal currentMedal;
     medal[] medals = new medal[]
     {
-        new medal() { type= medalType.none, medalColor = GlobalVars.none, moves = -1 },
+        new medal() { type= medalType.none, medalColor = GlobalVars.none, moves = 0 },
         new medal() { type= medalType.bronze, medalColor = GlobalVars.bronze },
         new medal() { type= medalType.silver, medalColor = GlobalVars.silver },
         new medal() { type= medalType.gold, medalColor = GlobalVars.gold }
@@ -110,11 +110,28 @@ public class GameController : MonoBehaviour
         lightBuibs = GameObject.FindGameObjectsWithTag("Player");
 
         // set the moves value
-        medals[(int)medalType.gold].moves = LevelManager.Instance.scores.goldMoves;
-        medals[(int)medalType.silver].moves = LevelManager.Instance.scores.silverMoves;
-        medals[(int)medalType.bronze].moves = LevelManager.Instance.scores.bronzeMoves;
+        SetScoreMoves(LevelManager.Instance.scores.goldMoves, LevelManager.Instance.scores.silverMoves, LevelManager.Instance.scores.bronzeMoves);
 
         resetGame();
+    }
+
+    public void UpdateCurrentMedal()
+    {
+        if (movesLeft >= medals[(int)medalType.gold].moves)
+            currentMedal = medals[(int)medalType.gold];
+        else if (movesLeft >= medals[(int)medalType.silver].moves)
+            currentMedal = medals[(int)medalType.silver];
+        else if (movesLeft >= medals[(int)medalType.bronze].moves)
+            currentMedal = medals[(int)medalType.bronze];
+        else
+            currentMedal = medals[(int)medalType.none];
+    }
+
+    public void SetScoreMoves(int gold, int silver, int bronze)
+    {
+        medals[(int)medalType.gold].moves = gold;
+        medals[(int)medalType.silver].moves = silver;
+        medals[(int)medalType.bronze].moves = bronze;
     }
 
     // Start is called before the first frame update
@@ -219,18 +236,32 @@ public class GameController : MonoBehaviour
         return !allCollided;
     }
 
-    void substractMove()
+    public void UpdateMedals()
+    {
+        nextMedalText.color = currentMedal.medalColor;
+        nextMedalText.SetText(currentMedal.moves.ToString());
+        medalUI.sprite = medalSprites[(int)currentMedal.type];
+    }
+
+
+    public void substractMoves(int nMoves)
+    {
+        for (int i = 0; i < nMoves; i++)
+        {
+            substractMove();
+        }
+    }
+
+    public void substractMove()
     {
         movesLeft--;
         movesText.SetText(movesLeft.ToString());
 
-        // change next medal if necessary
+
         if (movesLeft < currentMedal.moves)
         {
             currentMedal = medals[(int)currentMedal.type - 1];
-            nextMedalText.color = currentMedal.medalColor;
-            nextMedalText.SetText(currentMedal.moves.ToString());
-            medalUI.sprite = medalSprites[(int)currentMedal.type];
+            UpdateMedals();
         }
     }
 
@@ -241,20 +272,19 @@ public class GameController : MonoBehaviour
             addMove();
         }
     }
-    void addMove()
+    public void addMove()
     {
         movesLeft++;
         movesText.SetText(movesLeft.ToString());
 
-        // change next medal if necessary
         if (currentMedal.type != medalType.gold)
-            if (movesLeft > medals[(int)currentMedal.type + 1].moves)
+        {
+            if (movesLeft >= medals[(int)currentMedal.type + 1].moves)
             {
                 currentMedal = medals[(int)currentMedal.type + 1];
-                nextMedalText.color = currentMedal.medalColor;
-                nextMedalText.SetText(currentMedal.moves.ToString());
-                medalUI.sprite = medalSprites[(int)currentMedal.type];
+                UpdateMedals();
             }
+        }
     }
 
     // Update is called once per frame
@@ -324,7 +354,7 @@ public class GameController : MonoBehaviour
 
                     // history
                     movesCount++;
-                    undoesToAd = 2;
+                    undoesToAd = 20;
                     undoButton.interactable = true;
                 }
                 else

@@ -29,6 +29,7 @@ public struct sLevel
     public List<SavedTile> tiles;
     public Scores score;
     public eLevelSize levelSize;
+    public string levelId;
 }
 
 // this class is in charge of starting the level and loading it

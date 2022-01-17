@@ -14,7 +14,15 @@ public class CloudFirestore : MonoBehaviour
 
     private void Awake()
     {
-        Instance = this;
+        if (Instance == null)
+            Instance = this;
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        DontDestroyOnLoad(gameObject);
     }
 
     // Start is called before the first frame update
@@ -22,6 +30,9 @@ public class CloudFirestore : MonoBehaviour
     {
         db = FirebaseFirestore.DefaultInstance;
     }
+
+
+    // DATABASE FIRESTORE
 
     public void SaveData()
     {
@@ -77,7 +88,7 @@ public class CloudFirestore : MonoBehaviour
         };
     }
 
-    sLevel DLevelToSLevel(Dictionary<string, object> dlevel)
+    sLevel DLevelToSLevel(Dictionary<string, object> dlevel, string levelId)
     {
         Debug.Log("Tranforming level " + (string)dlevel["Name"]);
 
@@ -125,29 +136,40 @@ public class CloudFirestore : MonoBehaviour
 
                 Dictionary<string, object> dlevel = documentSnapshot.ToDictionary();
 
-                sLevel slevel = DLevelToSLevel(dlevel);
+                sLevel slevel = DLevelToSLevel(dlevel, documentSnapshot.Id);
 
                 action.Invoke(slevel);
             }
         });
     }
 
-    public void SaveLevel(sLevel slevel)
+    public void SaveLevel(sLevel slevel, Action onSuccess, Action onFail)
     {
         Debug.Log("SAVINGLEVEL");
 
         Dictionary<string, object> dlevel = SLevelToDLevel(slevel);
 
-        db.Collection("Levels").Document().SetAsync(dlevel).ContinueWith(task =>
+        StartCoroutine(ISaveLevel());
+
+        IEnumerator ISaveLevel()
         {
-            if (task.IsCompleted)
+            var createLevelTask = db.Collection("Levels").Document().SetAsync(dlevel);
+
+            LoadingScreen.Instance.StartFullScreenSpinner();
+
+            yield return new WaitUntil(() => createLevelTask.IsCompleted);
+
+            LoadingScreen.Instance.StopAll();
+
+            if (createLevelTask.Exception == null)
             {
-                Debug.Log("Succesfully added");
+                onSuccess.Invoke();
             }
             else
             {
-                Debug.Log("not succesfully");
+                onFail.Invoke();
             }
-        });
+        }
     }
+
 }

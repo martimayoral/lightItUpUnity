@@ -246,7 +246,7 @@ PlayerSettings:
   AndroidTargetDevices: 0
   AndroidSplashScreenScale: 0
   androidSplashScreen: {fileID: 0}
-  AndroidKeystoreName: "C:/Users/Mart\xED/Documents/ImportantLIU/user.keystore"
+  AndroidKeystoreName: C:/Users/marti/Documents/ImportantLIU/user.keystore
   AndroidKeyaliasName: liukey
   AndroidBuildApkPerCpuArchitecture: 0
   AndroidTVCompatibility: 0
@@ -262,7 +262,7 @@ PlayerSettings:
   androidGamepadSupportLevel: 0
   chromeosInputEmulation: 1
   AndroidMinifyWithR8: 0
-  AndroidMinifyRelease: 0
+  AndroidMinifyRelease: 1
   AndroidMinifyDebug: 0
   AndroidValidateAppBundleSize: 1
   AndroidAppBundleSizeToValidate: 150
@@ -755,11 +755,11 @@ PlayerSettings:
     m_VersionName: 
   apiCompatibilityLevel: 6
   activeInputHandler: 0
-  cloudProjectId: 4268f617-7ca4-4d6a-b0fe-158d275e6150
+  cloudProjectId: f2994a9b-b4d3-473b-9c08-e6e9aa5fc888
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: lightItUpUnity
-  organizationId: unity_b6f5270d9f73c1c52a9c
+  projectName: Light It Up (1)
+  organizationId: mayocornio
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   virtualTexturingSupportEnabled: 0

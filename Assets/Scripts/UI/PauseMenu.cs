@@ -20,6 +20,12 @@ public class PauseMenu : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        AdsManager.Instance.ShowBanner();
+    }
+
+    private void OnDestroy()
+    {
+        AdsManager.Instance.HideBanner();
     }
 
     // Start is called before the first frame update
@@ -119,14 +125,15 @@ public class PauseMenu : MonoBehaviour
     {
         PlayBtnSelect();
         AdsManager.Instance.PlayRewardedAdd(onRewardedAddSuccess);
+
+        void onRewardedAddSuccess()
+        {
+            Debug.Log("On reward success");
+            GameController.Instance.addMoves(3);
+            PauseMenu.Instance.Resume();
+            getMoreMovesButton.interactable = false;
+        }
     }
 
-    void onRewardedAddSuccess()
-    {
-        Debug.Log("On reward success");
-        GameController.Instance.addMoves(3);
-        PauseMenu.Instance.Resume();
-        getMoreMovesButton.interactable = false;
-    }
 
 }
