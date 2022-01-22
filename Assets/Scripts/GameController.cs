@@ -143,9 +143,10 @@ public class GameController : MonoBehaviour
         medalSprites = Resources.LoadAll<Sprite>("Other/Stars");
 
         // load level -------------------- MOVE TO ANOTHER COMPONENT WITHOUT EDITING
-        if (!editing)
-            LevelManager.Instance.LoadMap(SceneLoader.level, editing);
-
+        if (!editing) {
+            Debug.LogWarning("MOVE TO ANOTHER COMPONENT WITHOUT EDITING");
+            LevelManager.Instance.LoadMap(LevelsController.currentLevel, editing);
+        }
         // start all objects and values
         HardResetGame();
     }

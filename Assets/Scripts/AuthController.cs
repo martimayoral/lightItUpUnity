@@ -17,6 +17,7 @@ public class AuthController : MonoBehaviour
 
     void Awake()
     {
+        DBGText.Write("AuthController Awake");
         if (Instance == null)
             Instance = this;
         else
@@ -26,13 +27,13 @@ public class AuthController : MonoBehaviour
         }
         DontDestroyOnLoad(gameObject);
 
-        username = "";
         InitializeFirebase();
     }
 
     void InitializeFirebase()
     {
         Debug.Log("Initializing firebase");
+        DBGText.Write("Initializing firebase");
 
         auth = FirebaseAuth.DefaultInstance;
 
@@ -42,6 +43,9 @@ public class AuthController : MonoBehaviour
 
     private void Auth_StateChanged(object sender, System.EventArgs e)
     {
+        DBGText.Write("Auth State Changed: current user \"" + (auth.CurrentUser != null ? auth.CurrentUser.DisplayName : "null") + "\"");
+        Debug.Log("Auth State Changed");
+
         // first time they enter, no anonymous user
         if (user == null && auth.CurrentUser == null && username != "")
         {
@@ -56,6 +60,7 @@ public class AuthController : MonoBehaviour
             // when user signs out
             if (!signedIn && user != null)
             {
+                DBGText.Write("Signed out");
                 Debug.Log("Signed out");
                 updateLogging(false);
                 SignInAnonymously(); // sign them as anonymous
@@ -72,19 +77,24 @@ public class AuthController : MonoBehaviour
                     Debug.Log("Signed In as: " + user.DisplayName);
                 }
                 else
+                {
+                    updateLogging(false);
                     Debug.Log("Signed in as anonymous");
+                }
             }
         }
     }
 
     void updateLogging(bool signedIn)
     {
+        DBGText.Write("Updating logging " + (signedIn ? "(Signed in)" : "(Not signed in)"));
         if (signedIn)
         {
             if (MenuController.Instance)
                 MenuController.Instance.SettingsPanelShowInit();
             username = user.DisplayName;
             ToastController.Instance.ToastBlue("Wellcome " + user.DisplayName);
+            DBGText.Write("Wellcome " + user.DisplayName);
         }
         else
         {
@@ -107,6 +117,8 @@ public class AuthController : MonoBehaviour
             Debug.Log("Trying to sign in anonymously but already logged in as " + auth.CurrentUser.DisplayName);
             return;
         }
+
+        DBGText.Write("Singing in anonymously");
 
         Debug.Log("Singing in anonymously");
 

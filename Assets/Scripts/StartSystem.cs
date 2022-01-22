@@ -8,16 +8,33 @@ public class StartSystem : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        StartCoroutine(LoadData());
+        StartCoroutine(InitAndChangeScene());
     }
 
-    IEnumerator LoadData()
+    IEnumerator InitAndChangeScene()
     {
+
+        DBGText.Write("FirebaseApp Init");
+        var checkAndFixDependenciesTask = FirebaseApp.CheckAndFixDependenciesAsync();
+        yield return new WaitUntil(() => checkAndFixDependenciesTask.IsCompleted);
+        DBGText.Write("FirebaseApp initiated with result:" + checkAndFixDependenciesTask.Result.ToString());
+
+
+        DBGText.Write("Loading online data...");
+        SaveOnlineInfo.InitOnlineInfoData();
+        LevelsController.InitOnlineLevelsList();
+        DBGText.Write("Done!");
+
+        DBGText.Write("Loading user data and config...");
         LevelsController.LoadData();
         SaveUserConfig.LoadUserConfigData();
+        DBGText.Write("Done!");
 
+        DBGText.Write("Waiting 2 seconds for dramatic effect...");
         yield return new WaitForSeconds(2.0f);
+        DBGText.Write("Done!");
 
+        DBGText.Write("Loading menu...");
         SceneLoader.Instance.LoadMenu();
     }
 

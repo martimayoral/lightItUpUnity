@@ -7,11 +7,7 @@ using UnityEngine.Tilemaps;
 public class SceneLoader : MonoBehaviour
 {
     public Animator transition;
-    public float transitionTime = 1f;
-
-    static public int levelNum { get; private set; } // static bc it has to persist between scenes
-
-    static public sLevel level { get; private set; }
+    public readonly float transitionTime = 1f;
 
     static public SceneLoader Instance { get; private set; }
 
@@ -20,6 +16,19 @@ public class SceneLoader : MonoBehaviour
         Instance = this;
     }
 
+    public void ExitApp()
+    {
+        StartCoroutine(Exit());
+
+        IEnumerator Exit()
+        {
+            transition.SetTrigger("Start");
+
+            yield return new WaitForSeconds(transitionTime);
+
+            Application.Quit();
+        }
+    }
 
     public void LoadMenu()
     {
@@ -31,20 +40,22 @@ public class SceneLoader : MonoBehaviour
         StartCoroutine(LoadScene("LevelEditor"));
     }
 
+    public void LoadNextLevel()
+    {
+        LevelsController.ChangeCurrentLevelForNext();
+        StartCoroutine(LoadScene("Game"));
+    }
     public void LoadLevel(sLevel slevel)
     {
-        levelNum = 0;
-        level = slevel;
+        LevelsController.ChangeCurrentLevel(slevel);
         StartCoroutine(LoadScene("Game"));
     }
 
     public void LoadLevel(int ln)
     {
-        if (ln < LevelsController.nLevels)
+        if (LevelsController.ChangeCurrentLevel(ln))
         {
-            levelNum = ln;
             print("Level load Level " + ln);
-            level = LevelManager.GetSLevelFromFile(ln);
             StartCoroutine(LoadScene("Game"));
         }
         else

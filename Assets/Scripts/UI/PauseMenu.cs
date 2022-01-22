@@ -14,6 +14,9 @@ public class PauseMenu : MonoBehaviour
     public Button getMoreMovesButton;
     public Button nextLevelButton;
     public TextMeshProUGUI nextLevelText;
+    public TextMeshProUGUI nextLevelName;
+
+    bool campaignMode;
 
     static public PauseMenu Instance { get; private set; }
 
@@ -33,6 +36,7 @@ public class PauseMenu : MonoBehaviour
     {
         starsSprites = Resources.LoadAll<Sprite>("Other/Stars");
         getMoreMovesButton.interactable = true;
+
     }
 
     void PlayBtnSelect()
@@ -101,24 +105,33 @@ public class PauseMenu : MonoBehaviour
     public void Win(medalType medal)
     {
         Debug.Log("WIN...");
-        LevelsController.changeMedal(SceneLoader.levelNum, medal);
+
+        LevelsController.changeMedal(LevelsController.currentLevel.levelIndex, medal);
+
+        sLevel nextLevel = LevelsController.GetNextLevel();
+        if (nextLevel != null)
+        {
+            nextLevelName.text = nextLevel.levelName;
+        }
+        else
+        {
+            nextLevelText.text = "Congratulations!";
+            nextLevelName.text = "More levels comming soon...";
+            nextLevelButton.interactable = false;
+        }
 
         animator.SetTrigger("Win");
         winStarsImage.sprite = starsSprites[(int)medal];
-        Debug.Log("ln + 1: " + (SceneLoader.levelNum + 1));
-        Debug.Log("nlevels: " + LevelsController.nLevels);
-        if (SceneLoader.levelNum + 1 >= LevelsController.nLevels)
-        {
-            nextLevelText.text = "COMMING SOON...";
-            nextLevelButton.interactable = false;
-        }
+
+
     }
 
     public void BtnNextLevel()
     {
         PlayBtnSelect();
         Debug.Log("Next level...");
-        SceneLoader.Instance.LoadLevel(SceneLoader.levelNum + 1);
+
+        SceneLoader.Instance.LoadNextLevel();
     }
 
     public void BtnAdToWinMoves()

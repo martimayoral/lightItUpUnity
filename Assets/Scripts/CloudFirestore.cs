@@ -88,7 +88,7 @@ public class CloudFirestore : MonoBehaviour
         };
     }
 
-    sLevel DLevelToSLevel(Dictionary<string, object> dlevel, string levelId)
+    static sLevel DLevelToSLevel(Dictionary<string, object> dlevel, string levelId)
     {
         Debug.Log("Tranforming level " + (string)dlevel["Name"]);
 
@@ -138,9 +138,74 @@ public class CloudFirestore : MonoBehaviour
 
                 sLevel slevel = DLevelToSLevel(dlevel, documentSnapshot.Id);
 
+                slevel.levelId = documentSnapshot.Id;
+
                 action.Invoke(slevel);
             }
         });
+    }
+
+    public static DocumentSnapshot latestDoc;
+    public void PopulateListAndDoActionAsync(Action<bool> action, int n)
+    {
+        Debug.Log("Start at " + LevelsController.onlineLevelsList.Count);
+
+        Query allLevelsQuery;
+        
+
+        if (latestDoc != null)
+            allLevelsQuery = db.Collection("Levels").OrderBy("Name").StartAfter(latestDoc).Limit(n);
+        else
+            allLevelsQuery = db.Collection("Levels").OrderBy("Name").Limit(n);
+
+        StartCoroutine(PLADAA());
+
+        IEnumerator PLADAA()
+        {
+            var task = allLevelsQuery.GetSnapshotAsync();
+
+            DBGText.Write("Starting query");
+
+            LoadingScreen.Instance.StartFullScreenSpinner();
+            yield return new WaitUntil(() => task.IsCompleted);
+
+            QuerySnapshot allLevelsQuerySnapshot = task.Result;
+
+            DBGText.Write("Query result: " + task.Result);
+
+            if(task.Exception != null)
+                DBGText.Write("QUERY EXCEPTION: " + task.Exception);
+
+            int count = 0;
+
+            foreach (DocumentSnapshot documentSnapshot in allLevelsQuerySnapshot.Documents)
+            {
+                Debug.Log(String.Format("Document data for {0} document:", documentSnapshot.Id));
+                DBGText.Write("Document data for {0} document: " + documentSnapshot.Id);
+
+                Dictionary<string, object> dlevel = documentSnapshot.ToDictionary();
+
+                sLevel slevel = DLevelToSLevel(dlevel, documentSnapshot.Id);
+
+                slevel.levelId = documentSnapshot.Id;
+
+                slevel.levelIndex = LevelsController.onlineLevelsList.Count;
+
+                latestDoc = documentSnapshot;
+                count++;
+
+                DBGText.Write("Level Added");
+                LevelsController.onlineLevelsList.Add(slevel);
+            }
+            bool isLast = n != count;
+
+            DBGText.Write("Invoke Action");
+            action.Invoke(isLast);
+            DBGText.Write("Action Invoked");
+
+            yield return new WaitForSeconds(0.3f);
+            LoadingScreen.Instance.StopAll();
+        }
     }
 
     public void SaveLevel(sLevel slevel, Action onSuccess, Action onFail)

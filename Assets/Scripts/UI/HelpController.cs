@@ -45,7 +45,7 @@ public class HelpController : MonoBehaviour
 
         helpTexts = new Dictionary<int, sHelpMsg>();
 
-        switch (SceneLoader.levelNum)
+        switch (LevelsController.currentLevel.levelIndex)
         {
             case 1:
                 helpTexts.Add(0, new sHelpMsg(centeredText, eHelpAction.Begin, "Drag -> to move all light bulbs"));

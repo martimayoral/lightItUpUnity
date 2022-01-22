@@ -9,6 +9,9 @@ public static class UserConfig
 
     public static float musicVolume = .5f;
     public static float soundVolume = 1f;
+
+    public static readonly int onlineLoadBatchSize = 6;
+    public static bool[] onlineMedalsOptions = { true, true, true, true };
 }
 
 
@@ -18,27 +21,30 @@ public class UserConfigData
     public float animationSpeed;
     public float musicVolume;
     public float soundVolume;
+    public bool[] onlineMedalsOptions;
 
     public UserConfigData()
     {
         animationSpeed = UserConfig.animationSpeed;
         musicVolume = UserConfig.musicVolume;
         soundVolume = UserConfig.soundVolume;
+        onlineMedalsOptions = UserConfig.onlineMedalsOptions;
     }
 }
 
 public static class SaveUserConfig
 {
-    readonly static string path = Application.persistentDataPath + "/userConfigData.save";
+    readonly static string path = Application.persistentDataPath + "/userConfigData.txt";
 
     public static void SaveUserConfigData()
     {
-        BinaryFormatter formatter = new BinaryFormatter();
+        StreamWriter stream = File.CreateText(path);
 
-        FileStream stream = new FileStream(path, FileMode.Create);
+        //SaveOnlineInfoDataList data = new SaveOnlineInfoDataList { saveOnlineInfoDataList = getListFromDic() };
         UserConfigData data = new UserConfigData();
 
-        formatter.Serialize(stream, data);
+        stream.Write(JsonUtility.ToJson(data));
+
         stream.Close();
     }
 
@@ -46,16 +52,16 @@ public static class SaveUserConfig
     {
         if (File.Exists(path))
         {
-            BinaryFormatter formatter = new BinaryFormatter();
-            FileStream stream = new FileStream(path, FileMode.Open);
+            string text = File.ReadAllText(path);
 
-            UserConfigData data = formatter.Deserialize(stream) as UserConfigData;
+            UserConfigData data = JsonUtility.FromJson<UserConfigData>(text);
 
             UserConfig.animationSpeed = data.animationSpeed;
             UserConfig.musicVolume = data.musicVolume;
             UserConfig.soundVolume = data.soundVolume;
 
-            stream.Close();
+            if (data.onlineMedalsOptions != null)
+                UserConfig.onlineMedalsOptions = data.onlineMedalsOptions;
         }
     }
 

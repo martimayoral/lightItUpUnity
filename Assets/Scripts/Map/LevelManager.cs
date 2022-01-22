@@ -21,11 +21,11 @@ public struct Scores
     public enum scoreType { startingMoves, goldMoves, silverMoves, bronzeMoves }
 }
 
-public struct sLevel
+public class sLevel
 {
     public string levelName;
     public string creatorName;
-    public int levelIndex;
+    public int levelIndex; // if campaing, is the level number. if online, is the number on the list
     public List<SavedTile> tiles;
     public Scores score;
     public eLevelSize levelSize;
@@ -199,6 +199,8 @@ public class LevelManager : MonoBehaviour
             return new sLevel();
         }
 
+        Debug.Log(levelFile.jsonFile);
+        
         return JsonUtility.FromJson<sLevel>(levelFile.jsonFile);
     }
 
