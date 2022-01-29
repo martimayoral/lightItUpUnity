@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: GoalBlue
   m_EditorClassIdentifier: 
   m_AnimatedSprites:
-  - {fileID: -781294158744790408, guid: f00e744daab8141458068bb4419ba106, type: 3}
-  - {fileID: 9061651696941551919, guid: f00e744daab8141458068bb4419ba106, type: 3}
-  - {fileID: -6985117363303071740, guid: f00e744daab8141458068bb4419ba106, type: 3}
+  - {fileID: -781294158744790408, guid: 0a613bc563f8cab4f99df8f488caf1c2, type: 3}
+  - {fileID: 9061651696941551919, guid: 0a613bc563f8cab4f99df8f488caf1c2, type: 3}
+  - {fileID: -6985117363303071740, guid: 0a613bc563f8cab4f99df8f488caf1c2, type: 3}
   m_MinSpeed: 5
   m_MaxSpeed: 5
   m_AnimationStartTime: 0

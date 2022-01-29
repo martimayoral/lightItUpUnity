@@ -14,20 +14,38 @@ public class LevelManagerEditor : Editor
 
         LevelManager script = (LevelManager)target;
 
+        GUILayout.Label("Save");
+
         if (GUILayout.Button("Save Map"))
         {
             script.SaveMapInEditor();
         }
+
+        if (GUILayout.Button("Save New map"))
+        {
+            script.SaveNewMapInEditor();
+        }
+
+
+        GUILayout.Label("Load");
+
+        if (GUILayout.Button("Load Map"))
+        {
+            script.LoadMapInEditor(script.levelNum, true);
+        }
+
+        GUILayout.Label("Other");
 
         if (GUILayout.Button("Clear Map"))
         {
             script.LoadBase();
         }
 
-        if (GUILayout.Button("Load Map"))
+        if (GUILayout.Button("Save online data"))
         {
-            script.LoadMapInEditor(script.levelNum, true);
+            script.SaveOnlineData();
         }
+
     }
 
 

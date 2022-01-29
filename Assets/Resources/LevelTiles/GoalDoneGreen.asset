@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: GoalDoneGreen
   m_EditorClassIdentifier: 
   m_AnimatedSprites:
-  - {fileID: -4815885190406460031, guid: f00e744daab8141458068bb4419ba106, type: 3}
+  - {fileID: 6007627129536956325, guid: 0a613bc563f8cab4f99df8f488caf1c2, type: 3}
   m_MinSpeed: 1
   m_MaxSpeed: 1
   m_AnimationStartTime: 0

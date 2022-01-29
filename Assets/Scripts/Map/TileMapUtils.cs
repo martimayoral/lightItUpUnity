@@ -12,6 +12,9 @@ public enum TileType
     // bg
     BaseWall = 0,
     BlockedBaseWall = 1,
+    GroundOnlyY = 10,
+    GroundOnlyX = 11,
+    MovableBlock = 80,
 
     // Players
     Red = 100,
@@ -38,9 +41,16 @@ public enum eLevelSize
 public static class TileMapUtils
 {
 
-    readonly static Vector2Int mapMargin = new Vector2Int(10, 3);
-    readonly static Vector2Int smallMapInitialCorner = new Vector2Int(-7, -3);
-    readonly static Vector2Int smallMapFinalCorner = new Vector2Int(7, 3);
+    readonly static Vector2Int mapMargin = new Vector2Int(10, 4);
+
+    readonly static Vector2Int smallMapCorner = new Vector2Int(7, 3);
+    readonly static int smallCameraSize = 5;
+
+    readonly static Vector2Int mediumMapCorner = new Vector2Int(9, 4);
+    readonly static int mediumCameraSize = 7;
+
+    readonly static Vector2Int largeMapCorner = new Vector2Int(10, 5);
+    readonly static int largeCameraSize = 8;
 
 
     public static void SetTile(Tilemap tilemap, Vector3Int tilePos, TileType tile)
@@ -60,6 +70,15 @@ public static class TileMapUtils
                 break;
             case TileType.BlockedBaseWall:
                 SetTile(tilemap, tilePos, Resources.Load<LevelTile>("LevelTiles/BlockedGround"));
+                break;
+            case TileType.GroundOnlyX:
+                SetTile(tilemap, tilePos, Resources.Load<LevelTile>("LevelTiles/GroundOnlyX"));
+                break;
+            case TileType.GroundOnlyY:
+                SetTile(tilemap, tilePos, Resources.Load<LevelTile>("LevelTiles/GroundOnlyY"));
+                break;
+            case TileType.MovableBlock:
+                SetTile(tilemap, tilePos, Resources.Load<LevelTile>("LevelTiles/MovableBlock"));
                 break;
             case TileType.Red:
                 SetTile(tilemap, tilePos, Resources.Load<LevelTile>("LevelTiles/StartRed"));
@@ -127,11 +146,13 @@ public static class TileMapUtils
     }
     static bool IsBorder(int x, int y, eLevelSize size)
     {
-        return IsBorder(x, y, GetInitialCorner(size), GetFinalCorner(size));
+        return IsBorder(x, y, -1 * GetCorner(size), GetCorner(size));
     }
 
-    public static void LoadMapBorders(Tilemap tilemap, TileType tileType, Vector2Int initialCorner, Vector2Int finalCorner, Vector2Int margins)
+    static void LoadMapBorders(Tilemap tilemap, TileType tileType, Vector2Int corner, Vector2Int margins)
     {
+        Vector2Int initialCorner = -1 * corner;
+        Vector2Int finalCorner = corner;
         for (int x = initialCorner.x - margins.x; x < (finalCorner.x + margins.x); x++)
         {
             for (int y = initialCorner.y - margins.y; y < (finalCorner.y + margins.y); y++)
@@ -149,24 +170,10 @@ public static class TileMapUtils
 
     public static void LoadMapBorders(Tilemap tilemap, TileType tileType, eLevelSize size)
     {
-        LoadMapBorders(tilemap, tileType, GetInitialCorner(size), GetFinalCorner(size), mapMargin);
+        LoadMapBorders(tilemap, tileType, GetCorner(size), mapMargin);
     }
 
-    static Vector2Int GetInitialCorner(eLevelSize size)
-    {
-        switch (size)
-        {
-            case eLevelSize.Flex:
-                // we don't want any border in flex
-                return mapMargin;
-            case eLevelSize.Small:
-                return smallMapInitialCorner;
-            default:
-                Debug.LogError($"Load Map border {size} not defined");
-                return new Vector2Int();
-        }
-    }
-    static Vector2Int GetFinalCorner(eLevelSize size)
+    static Vector2Int GetCorner(eLevelSize size)
     {
         switch (size)
         {
@@ -174,40 +181,57 @@ public static class TileMapUtils
                 // we don't want any border in flex
                 return -mapMargin;
             case eLevelSize.Small:
-                return smallMapFinalCorner;
+                return smallMapCorner;
+            case eLevelSize.Medium:
+                return mediumMapCorner;
+            case eLevelSize.Large:
+                return largeMapCorner;
             default:
                 Debug.LogError($"Load Map border {size} not defined");
                 return new Vector2Int();
         }
     }
 
-    public static int CountLBStarts(Tilemap tilemap)
+    public static Dictionary<TileType, int> CountTileTypes(Tilemap tilemap)
     {
-        int n = 0;
-        // get all tiles
+        Dictionary<TileType, int> dic = new Dictionary<TileType, int>();
 
-        BoundsInt bounds = tilemap.cellBounds;
-        TileBase[] allTiles = tilemap.GetTilesBlock(bounds);
-
+        foreach (TileType tileType in System.Enum.GetValues(typeof(TileType)))
+        {
+            dic.Add(tileType, 0);
+        }
 
         foreach (LevelTile tile in tilemap.GetTilesBlock(tilemap.cellBounds))
         {
             if (tile != null)
-                switch (tile.type)
-                {
-                    case TileType.GoalRed:
-                    case TileType.GoalBlue:
-                    case TileType.GoalGreen:
-                        n++;
-                        break;
-                }
+                dic[tile.type]++;
         }
-        return n;
+
+        return dic;
     }
 
     public static void ClearMapBorders(Tilemap tilemap, eLevelSize size)
     {
         LoadMapBorders(tilemap, TileType.None, size);
+    }
+
+    public static void ChangeCameraSize(Camera camera, eLevelSize size)
+    {
+        switch (size)
+        {
+            case eLevelSize.Flex:
+            case eLevelSize.Small:
+                camera.orthographicSize = smallCameraSize;
+                break;
+            case eLevelSize.Medium:
+                camera.orthographicSize = mediumCameraSize;
+                break;
+            case eLevelSize.Large:
+                camera.orthographicSize = largeCameraSize;
+                break;
+            default:
+                break;
+        }
     }
 
 }

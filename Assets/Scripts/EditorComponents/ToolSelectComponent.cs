@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEditor;
+using UnityEngine.UI;
 
 public class ToolSelectComponent : MonoBehaviour
 {
@@ -7,6 +8,23 @@ public class ToolSelectComponent : MonoBehaviour
 
     [HideInInspector]
     public TileType type;
+
+    Image image;
+
+    private void Awake()
+    {
+        image = GetComponent<Image>();
+    }
+
+    public void setSelected(bool isSelected)
+    {
+        if (isSelected && tool != EditorController.Tool.None)
+            image.color = new Color(0, 0, 0, image.color.a);
+        else
+            image.color = new Color(1, 1, 1, image.color.a);
+    }
+
+
 }
 
 #if UNITY_EDITOR

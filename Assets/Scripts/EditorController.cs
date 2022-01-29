@@ -8,7 +8,8 @@ using TMPro;
 public class EditorController : MonoBehaviour
 {
     readonly int maxMoves = 50;
-    readonly int minMoves = 1;
+    readonly int minMoves = 3;
+    readonly int minStarMoves = 0;
 
 
     [System.Serializable]
@@ -20,13 +21,13 @@ public class EditorController : MonoBehaviour
     }
 
     TileType tileTypeToPaint;
-
     Tool tool;
+    ToolSelectComponent toolSelectedComponent;
 
     Tilemap tilemap;
 
     // level info
-    sLevel level;
+    static sLevel level;
     Scores scores;
     eLevelSize size;
 
@@ -35,42 +36,90 @@ public class EditorController : MonoBehaviour
     public GameController gameController;
     public Animator animatorUI;
 
-    public TextMeshProUGUI exitTitle;
-    public TextMeshProUGUI exitSubtitle;
-    public Button exitPublishButton;
-    public Button menuPublishButton;
-    public GameObject leftoverMovements;
-    public TextMeshProUGUI leftoverMovementsText;
+    [SerializeField] TextMeshProUGUI exitTitle;
+    [SerializeField] TextMeshProUGUI exitSubtitle;
+    [SerializeField] Button exitPublishButton;
+    [SerializeField] Button menuPublishButton;
+    [SerializeField] GameObject leftoverMovements;
+    [SerializeField] TextMeshProUGUI leftoverMovementsText;
+    int leftOverMoves;
 
     [Header("Moves Settings")]
-    public TextMeshProUGUI settingsScoresMoves;
-    public TextMeshProUGUI settingsScoresGold;
-    public TextMeshProUGUI settingsScoresSilver;
-    public TextMeshProUGUI settingsScoresBronze;
+    [SerializeField] TextMeshProUGUI settingsScoresMoves;
+    [SerializeField] TextMeshProUGUI settingsScoresGold;
+    [SerializeField] TextMeshProUGUI settingsScoresSilver;
+    [SerializeField] TextMeshProUGUI settingsScoresBronze;
+
+    [Header("Map size Setting")]
+    [SerializeField] TextMeshProUGUI settingsMapSize;
+    [SerializeField] Button lessMapSizeButton;
+    [SerializeField] Button moreMapSizeButton;
 
     [Header("Publish")]
-    public TextMeshProUGUI settingsPublishText;
-    public TMP_InputField publishName;
-    public TextMeshProUGUI publishingAs;
-    public Button settingsPublishButton;
+    [SerializeField] TextMeshProUGUI settingsPublishText;
+    [SerializeField] TMP_InputField publishName;
+    [SerializeField] TextMeshProUGUI publishingAs;
+    [SerializeField] Button settingsPublishButton;
 
     private void Start()
     {
         tool = Tool.None;
-        tilemap = GameObject.FindObjectOfType<Tilemap>();
+        tilemap = FindObjectOfType<Tilemap>();
 
         canPublish = true;
         DisablePublish();
         publishingAs.text = "Publishing as " + AuthController.username;
 
-        size = eLevelSize.Small;
-        TileMapUtils.LoadMapBorders(tilemap, true, size);
+        if (level == null)
+        {
+            Debug.Log("Initiating Editor");
+            size = eLevelSize.Small;
+            TileMapUtils.LoadMapBorders(tilemap, true, size);
+            scores = new Scores() { goldMoves = 5, silverMoves = 4, bronzeMoves = 2, startingMoves = 30 };
 
-        scores = new Scores() { goldMoves = 5, silverMoves = 4, bronzeMoves = 2, startingMoves = 20 };
-        UpdateScoresText();
+            UpdateSLevel();
+        }
+        else
+        {
+            size = level.levelSize;
+            scores = level.score;
+            Debug.Log($"Loading level (moves = {scores.startingMoves})");
+
+        }
+
+        LevelManager.Instance.LoadMap(level, true);
+        gameController.HardResetGame();
+
+        UpdateSettingsText();
     }
 
-    public void EnablePublish(bool reduceMovementsOption = false)
+    public void EnableLeftOverMovesButton(int moves)
+    {
+        if (moves == 0)
+        {
+            DisableLeftOverMovesButton();
+            return;
+        }
+
+        leftoverMovements.SetActive(true);
+        leftOverMoves = moves;
+
+        if (moves > 0)
+        {
+            leftoverMovementsText.text = $"Reduce moves leftover ({moves})";
+        }
+        else
+        {
+            leftoverMovementsText.text = $"Add {-moves} more moves";
+        }
+    }
+
+    public void DisableLeftOverMovesButton()
+    {
+        leftoverMovements.SetActive(false);
+    }
+
+    public void EnablePublish()
     {
         if (!canPublish)
         {
@@ -79,7 +128,6 @@ public class EditorController : MonoBehaviour
             exitPublishButton.interactable = true;
         }
 
-        leftoverMovements.SetActive(reduceMovementsOption);
     }
 
     public void DisablePublish()
@@ -90,7 +138,6 @@ public class EditorController : MonoBehaviour
             menuPublishButton.interactable = false;
             exitPublishButton.interactable = false;
 
-            leftoverMovements.SetActive(false);
         }
     }
 
@@ -139,11 +186,17 @@ public class EditorController : MonoBehaviour
 
     }
 
-    public void SelectTool(ToolSelectComponent tool)
+    public void SelectTool(ToolSelectComponent toolSelectComponent)
     {
-        this.tool = tool.tool;
-        this.tileTypeToPaint = tool.type;
-        Debug.Log(tool.type);
+        if (toolSelectedComponent != null)
+            toolSelectedComponent.setSelected(false);
+
+        toolSelectedComponent = toolSelectComponent;
+        toolSelectedComponent.setSelected(true);
+
+        tool = toolSelectComponent.tool;
+        tileTypeToPaint = toolSelectComponent.type;
+        Debug.Log(toolSelectComponent.type);
     }
 
     void LoadEditorMap()
@@ -153,19 +206,35 @@ public class EditorController : MonoBehaviour
 
     void UpdateSLevel()
     {
+        Debug.Log($"Updating slevel (moves = {scores.startingMoves})");
+
         level = TileMapUtils.CreateLevel(publishName.text, 0, tilemap, scores, size);
         level.creatorName = AuthController.username;
     }
 
     public void BtnReduceMovesLeftover()
     {
-        int startingMoves = scores.startingMoves;
-        scores.startingMoves = scores.goldMoves + GameController.Instance.movesCount;
-        LevelManager.Instance.scores.startingMoves = scores.startingMoves;
+        if (leftOverMoves > 0)
+        {
+            int startingMoves = scores.startingMoves;
+            scores.startingMoves = scores.goldMoves + GameController.Instance.movesCount;
+            LevelManager.Instance.scores.startingMoves = scores.startingMoves;
 
-        GameController.Instance.substractMoves(startingMoves - scores.startingMoves);
-        settingsScoresMoves.text = scores.startingMoves.ToString();
-        leftoverMovements.SetActive(false);
+            GameController.Instance.substractMoves(startingMoves - scores.startingMoves);
+            settingsScoresMoves.text = scores.startingMoves.ToString();
+            leftoverMovements.SetActive(false);
+        }
+        else
+        {
+            scores.startingMoves += (-leftOverMoves);
+            LevelManager.Instance.scores.startingMoves = scores.startingMoves;
+
+            GameController.Instance.addMoves(-leftOverMoves);
+            settingsScoresMoves.text = scores.startingMoves.ToString();
+            BtnResume();
+            animatorUI.SetTrigger("playStart");
+        }
+
     }
 
     // --- Test game ---
@@ -173,11 +242,31 @@ public class EditorController : MonoBehaviour
     {
         tool = Tool.None;
 
-        if (TileMapUtils.CountLBStarts(tilemap) == 0)
+        Dictionary<TileType, int> tileTypesCountDic = TileMapUtils.CountTileTypes(tilemap);
+
+        int numLightBulbs = tileTypesCountDic[TileType.Red] + tileTypesCountDic[TileType.Green] + tileTypesCountDic[TileType.Blue];
+        if (numLightBulbs == 0)
         {
-            ToastController.Instance.ToastRed("You need to add some light bulb to Play");
+            ToastController.Instance.ToastRed("You need to add some light bulb to Play", ToastController.eToastType.TOP);
             return;
         }
+
+        if (tileTypesCountDic[TileType.Red] > tileTypesCountDic[TileType.GoalRed])
+        {
+            ToastController.Instance.ToastRed("You need to have more red light sources", ToastController.eToastType.TOP);
+            return;
+        }
+        if (tileTypesCountDic[TileType.Green] > tileTypesCountDic[TileType.GoalGreen])
+        {
+            ToastController.Instance.ToastRed("You need to have more green light sources", ToastController.eToastType.TOP);
+            return;
+        }
+        if (tileTypesCountDic[TileType.Blue] > tileTypesCountDic[TileType.GoalBlue])
+        {
+            ToastController.Instance.ToastRed("You need to have more blue light sources", ToastController.eToastType.TOP);
+            return;
+        }
+
 
         UpdateSLevel();
 
@@ -205,9 +294,11 @@ public class EditorController : MonoBehaviour
             exitSubtitle.text = "You can now publish the game";
 
             Debug.Log($"Moves left {gameController.movesLeft}, gold moves {scores.goldMoves} ");
-            EnablePublish(gameController.movesLeft != scores.goldMoves);
-            leftoverMovementsText.text = $"Reduce moves leftover ({GameController.Instance.movesLeft - scores.goldMoves})";
+            EnablePublish();
         }
+
+        EnableLeftOverMovesButton(gameController.movesLeft - scores.goldMoves);
+
     }
 
     public void Lose()
@@ -217,13 +308,14 @@ public class EditorController : MonoBehaviour
         exitTitle.text = "You lost";
         exitSubtitle.text = "You need 3 stars to publish";
         DisablePublish();
+        EnableLeftOverMovesButton(-10);
     }
 
     public void BtnContinueEditing()
     {
         Debug.Log("Continue editing");
         animatorUI.SetTrigger("menu");
-        gameController.DestoyPlayers();
+        gameController.DeleteMovableObj();
 
         LoadEditorMap();
     }
@@ -259,9 +351,11 @@ public class EditorController : MonoBehaviour
         {
             case Scores.scoreType.startingMoves:
                 scores.startingMoves += toAdd;
-                if (movesSelectComponent.add)
+
+                if (movesSelectComponent.add && scores.startingMoves <= maxMoves)
                     GameController.Instance.addMove();
-                else
+
+                if (!movesSelectComponent.add && scores.startingMoves >= minMoves)
                     GameController.Instance.substractMove();
                 break;
             case Scores.scoreType.goldMoves:
@@ -278,9 +372,9 @@ public class EditorController : MonoBehaviour
         }
 
         scores.startingMoves = Mathf.Clamp(scores.startingMoves, minMoves, maxMoves);
-        scores.goldMoves = Mathf.Clamp(scores.goldMoves, minMoves, scores.startingMoves);
-        scores.silverMoves = Mathf.Clamp(scores.silverMoves, minMoves, scores.goldMoves);
-        scores.bronzeMoves = Mathf.Clamp(scores.bronzeMoves, minMoves, scores.silverMoves);
+        scores.goldMoves = Mathf.Clamp(scores.goldMoves, minStarMoves, scores.startingMoves);
+        scores.silverMoves = Mathf.Clamp(scores.silverMoves, minStarMoves, scores.goldMoves);
+        scores.bronzeMoves = Mathf.Clamp(scores.bronzeMoves, minStarMoves, scores.silverMoves);
 
         GameController.Instance.SetScoreMoves(scores.goldMoves, scores.silverMoves, scores.bronzeMoves);
         GameController.Instance.UpdateCurrentMedal();
@@ -289,15 +383,61 @@ public class EditorController : MonoBehaviour
         LevelManager.Instance.scores = scores;
 
         DisablePublish();
-        UpdateScoresText();
+        UpdateSettingsText();
     }
 
-    void UpdateScoresText()
+    void UpdateSettingsText()
     {
         settingsScoresMoves.text = scores.startingMoves.ToString();
         settingsScoresGold.text = scores.goldMoves.ToString();
         settingsScoresSilver.text = scores.silverMoves.ToString();
         settingsScoresBronze.text = scores.bronzeMoves.ToString();
+
+
+        settingsMapSize.text = size.ToString();
+        if (size == eLevelSize.Small)
+            lessMapSizeButton.interactable = false;
+        else if (size == eLevelSize.Large)
+            moreMapSizeButton.interactable = false;
+    }
+
+    public void ChangeMapSize(bool more)
+    {
+        TileMapUtils.ClearMapBorders(tilemap, size);
+
+        if (more)
+            switch (size)
+            {
+                case eLevelSize.Small:
+                    size = eLevelSize.Medium;
+                    lessMapSizeButton.interactable = true;
+                    break;
+                case eLevelSize.Medium:
+                    size = eLevelSize.Large;
+                    moreMapSizeButton.interactable = false;
+                    break;
+                default:
+                    break;
+            }
+        else
+            switch (size)
+            {
+                case eLevelSize.Medium:
+                    size = eLevelSize.Small;
+                    lessMapSizeButton.interactable = false;
+                    break;
+                case eLevelSize.Large:
+                    moreMapSizeButton.interactable = true;
+                    size = eLevelSize.Medium;
+                    break;
+                default:
+                    break;
+            }
+
+        settingsMapSize.text = size.ToString();
+        TileMapUtils.LoadMapBorders(tilemap, true, size);
+        TileMapUtils.ChangeCameraSize(FindObjectOfType<Camera>(), size);
+
     }
 
     // --- publish ---
@@ -328,17 +468,22 @@ public class EditorController : MonoBehaviour
             () =>
             {
                 // on success
-                animatorUI.SetTrigger("menu");
-                ToastController.Instance.ToastGreen("Level Published!");
+                ToastController.Instance.ToastGreen("Level Published!", ToastController.eToastType.TOP);
+
+                tilemap.ClearAllTiles();
+                TileMapUtils.LoadMapBorders(tilemap, true, size);
+                BtnLoadMenu();
             },
             () =>
                 // on fail
-                ToastController.Instance.ToastRed("Level failed to upload")
+                ToastController.Instance.ToastRed("Level failed to upload", ToastController.eToastType.TOP)
             );
     }
 
     public void BtnLoadMenu()
     {
+        UpdateSLevel();
         SceneLoader.Instance.LoadMenu();
     }
+
 }

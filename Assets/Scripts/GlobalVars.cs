@@ -10,6 +10,14 @@ public enum medalType
     gold
 }
 
+public enum directions
+{
+    UP,
+    BOTTOM,
+    LEFT,
+    RIGHT
+}
+
 public class GlobalVars : MonoBehaviour
 {
     public static Color gold = new Color32(218, 165, 32, 255);

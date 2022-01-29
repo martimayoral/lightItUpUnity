@@ -30,9 +30,12 @@ public class SceneLoader : MonoBehaviour
         }
     }
 
-    public void LoadMenu()
+
+
+    public void LoadMenu(MenuController.eMenuPanel panel = MenuController.eMenuPanel.SELECTION)
     {
         StartCoroutine(LoadScene("Menu"));
+        MenuController.startingPanel = panel;
     }
 
     public void LoadLevelEditor()

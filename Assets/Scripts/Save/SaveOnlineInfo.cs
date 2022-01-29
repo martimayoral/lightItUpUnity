@@ -19,7 +19,7 @@ public struct SaveOnlineInfoDataList
 
 public static class SaveOnlineInfo
 {
-    readonly static string path = Application.persistentDataPath + "/onlineLevelsPlayed.txt";
+    readonly static string path = Application.persistentDataPath + "/onlineLevelsPlayed.json";
 
     public static Dictionary<string, medalType> levelsPlayed;
 

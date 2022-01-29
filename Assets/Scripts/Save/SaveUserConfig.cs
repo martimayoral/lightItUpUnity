@@ -10,7 +10,7 @@ public static class UserConfig
     public static float musicVolume = .5f;
     public static float soundVolume = 1f;
 
-    public static readonly int onlineLoadBatchSize = 6;
+    public static readonly int onlineLoadBatchSize = 30;
     public static bool[] onlineMedalsOptions = { true, true, true, true };
 }
 
@@ -34,7 +34,7 @@ public class UserConfigData
 
 public static class SaveUserConfig
 {
-    readonly static string path = Application.persistentDataPath + "/userConfigData.txt";
+    readonly static string path = Application.persistentDataPath + "/userConfigData.json";
 
     public static void SaveUserConfigData()
     {

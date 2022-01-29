@@ -23,8 +23,8 @@ public class GameController : MonoBehaviour
     Vector2 initialTouch;
 
     // the players
-    public static GameObject[] lightBuibs { get; private set; }
-
+    public static MovableObject[] movableObjects { get; private set; } // canviar
+    public static PlayerController[] players { get; private set; }
 
     // game state
     public static eGameState gameState;
@@ -39,7 +39,7 @@ public class GameController : MonoBehaviour
     public TextMeshProUGUI nextMedalText;
     public Image medalUI;
     Sprite[] medalSprites;
-    public int movesLeft { get; private set; }
+    public int movesLeft;
     struct medal
     {
         public medalType type;
@@ -56,17 +56,18 @@ public class GameController : MonoBehaviour
     };
 
     // input buffer
-    Queue<Vector3> inputBuffer;
+    Queue<Vector3Int> inputBuffer;
     float lastInputTime = 0.0f;
 
-    // editor
-    public bool editing;
 
     static public GameController Instance { get; private set; }
 
     private void Awake()
     {
         Instance = this;
+
+        // sprites
+        medalSprites = Resources.LoadAll<Sprite>("UI/stars");
     }
 
     public void resetGame()
@@ -78,36 +79,41 @@ public class GameController : MonoBehaviour
 
         // moves and medals
         movesLeft = LevelManager.Instance.scores.startingMoves;
-        movesText.SetText(movesLeft.ToString());
+        UpdateMovesUI();
         currentMedal = medals[(int)medalType.gold];
         medalUI.sprite = medalSprites[(int)medalType.gold];
         nextMedalText.color = currentMedal.medalColor;
         nextMedalText.SetText(currentMedal.moves.ToString());
 
         // create an imput buffer queue to make a "memory"
-        inputBuffer = new Queue<Vector3>();
+        inputBuffer = new Queue<Vector3Int>();
         initialTouch.x = float.PositiveInfinity;
 
         // moves history
         undoButton.interactable = false;
         movesCount = 0;
-        //foreach()
     }
 
 
-    public void DestoyPlayers()
+    public void DeleteMovableObj()
     {
-        foreach (var lb in lightBuibs)
+        foreach (var mo in movableObjects)
         {
-            Destroy(lb);
+            Destroy(mo.gameObject);
         }
-        lightBuibs = null;
+        movableObjects = null;
     }
 
     public void HardResetGame()
     {
         // get the players that the level manager has instanciated
-        lightBuibs = GameObject.FindGameObjectsWithTag("Player");
+        GameObject[] movableGObjects = GameObject.FindGameObjectsWithTag("Player");
+        movableObjects = new MovableObject[movableGObjects.Length];
+        for (int i = 0; i < movableGObjects.Length; i++)
+        {
+            movableObjects[i] = movableGObjects[i].GetComponent<MovableObject>();
+        }
+
 
         // set the moves value
         SetScoreMoves(LevelManager.Instance.scores.goldMoves, LevelManager.Instance.scores.silverMoves, LevelManager.Instance.scores.bronzeMoves);
@@ -139,22 +145,14 @@ public class GameController : MonoBehaviour
     {
         Debug.Log("Start Game Controller");
 
-        // sprites
-        medalSprites = Resources.LoadAll<Sprite>("Other/Stars");
 
-        // load level -------------------- MOVE TO ANOTHER COMPONENT WITHOUT EDITING
-        if (!editing) {
-            Debug.LogWarning("MOVE TO ANOTHER COMPONENT WITHOUT EDITING");
-            LevelManager.Instance.LoadMap(LevelsController.currentLevel, editing);
-        }
-        // start all objects and values
-        HardResetGame();
+        gameState = eGameState.Pause;
     }
 
 
     public void BtnUndo()
     {
-        inputBuffer.Enqueue(new Vector3(0, 0, -1));
+        inputBuffer.Enqueue(new Vector3Int(0, 0, -1));
     }
 
     void UndoMove()
@@ -164,9 +162,9 @@ public class GameController : MonoBehaviour
 
         if (movesCount > 0)
         {
-            foreach (GameObject lb in lightBuibs)
+            foreach (MovableObject mo in movableObjects)
             {
-                lb.GetComponent<PlayerController>().UndoMove();
+                mo.UndoMove();
             }
             addMove();
 
@@ -185,43 +183,42 @@ public class GameController : MonoBehaviour
         }
     }
 
-    private void predictPlayerMoves(Vector3 translation)
+    private void predictPlayerMoves(Vector3Int translation)
     {
-        foreach (GameObject lb in lightBuibs)
+        foreach (MovableObject mo in movableObjects)
         {
-            lb.GetComponent<PlayerController>().clearMovement();
+            mo.ClearMovement();
         }
 
         bool exit = false;
         while (!exit)
         {
             exit = true;
-            foreach (GameObject lb in lightBuibs)
+            foreach (MovableObject mo in movableObjects)
             {
-                PlayerController pc = lb.GetComponent<PlayerController>();
-                pc.PreMove(translation);
+                mo.PreMove(translation);
 
                 // if all moved
-                exit = exit && pc.hasMoved();
+                exit = exit && mo.hasMoved();
             }
         }
     }
 
     // moves players returns true if some moved
-    private bool MovePlayers(Vector3 translation)
+    private bool MovePlayers(Vector3Int translation)
     {
         // predict moves (for who colides first)
         predictPlayerMoves(translation);
 
         // move players
-        foreach (GameObject lb in lightBuibs)
-            lb.GetComponent<PlayerController>().Move(translation);
+        foreach (MovableObject mo in movableObjects)
+            mo.Move(translation);
 
         // check if they all collided and if not count the move
         bool allCollided = true;
-        foreach (GameObject lb in lightBuibs)
+        foreach (MovableObject mo in movableObjects)
         {
-            if (!lb.GetComponent<PlayerController>().hasCollided())
+            if (!mo.hasCollided())
                 allCollided = false;
         }
 
@@ -276,7 +273,7 @@ public class GameController : MonoBehaviour
     public void addMove()
     {
         movesLeft++;
-        movesText.SetText(movesLeft.ToString());
+        UpdateMovesUI();
 
         if (currentMedal.type != medalType.gold)
         {
@@ -286,6 +283,11 @@ public class GameController : MonoBehaviour
                 UpdateMedals();
             }
         }
+    }
+
+    public void UpdateMovesUI()
+    {
+        movesText.SetText(movesLeft.ToString());
     }
 
     // Update is called once per frame
@@ -318,11 +320,11 @@ public class GameController : MonoBehaviour
 
                 if (Mathf.Abs(touchDif.x) > Mathf.Abs(touchDif.y))
                 {
-                    inputBuffer.Enqueue(new Vector3(Mathf.Sign(touchDif.x), 0, 0));
+                    inputBuffer.Enqueue(new Vector3Int((int)Mathf.Sign(touchDif.x), 0, 0));
                 }
                 if (Mathf.Abs(touchDif.y) > Mathf.Abs(touchDif.x))
                 {
-                    inputBuffer.Enqueue(new Vector3(0, Mathf.Sign(touchDif.y), 0));
+                    inputBuffer.Enqueue(new Vector3Int(0, (int)Mathf.Sign(touchDif.y), 0));
                 }
 
             }
@@ -336,7 +338,7 @@ public class GameController : MonoBehaviour
             lastInputTime = Time.time;
 
             // get the move
-            Vector3 move = inputBuffer.Dequeue();
+            Vector3Int move = inputBuffer.Dequeue();
 
             // it is an undo move
             if (move.z == -1)
@@ -359,21 +361,22 @@ public class GameController : MonoBehaviour
                     undoButton.interactable = true;
                 }
                 else
-                    foreach (GameObject lb in lightBuibs)
-                        lb.GetComponent<PlayerController>().PopMove();
+                    foreach (MovableObject mo in movableObjects)
+                        mo.PopMove();
             }
         }
 
         // check if game state is won (all bulbs have reached the goal)
         bool winState = true;
 
-        if (lightBuibs.Length == 0)
+        if (movableObjects.Length == 0)
             winState = false;
 
-        foreach (GameObject lb in lightBuibs)
+        foreach (MovableObject mo in movableObjects)
         {
-            if (!lb.GetComponent<PlayerController>().goalReached)
-                winState = false;
+            if (mo is PlayerController)
+                if (!((PlayerController)mo).goalReached)
+                    winState = false;
         }
         if (winState)
         {

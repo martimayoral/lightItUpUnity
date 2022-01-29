@@ -6,6 +6,7 @@ using UnityEditor;
 using System.Linq;
 using System;
 using System.Text;
+using System.IO;
 
 [Serializable]
 public struct SavedTile
@@ -39,19 +40,21 @@ public class LevelManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
-        tilemap = GameObject.FindObjectOfType<Tilemap>();
-        goalTiles = new List<SavedTile>();
+        tilemap = FindObjectOfType<Tilemap>();
+        levelCamera = FindObjectOfType<Camera>();
     }
 
     public Tilemap tilemap;
+    public Camera levelCamera;
 
     public Scores scores;
 
     public eLevelSize levelSize;
 
-    List<SavedTile> goalTiles;
+    List<SavedTile> goalTiles = new List<SavedTile>();
 
     [SerializeField] Transform playerPrefab;
+    [SerializeField] Transform movableBlockPrefab;
 
 
 
@@ -60,16 +63,22 @@ public class LevelManager : MonoBehaviour
 
     public void SaveMapInEditor()
     {
-        sLevel newLevel = TileMapUtils.CreateLevel($"Level {levelNum}", levelNum, tilemap, scores, levelSize);
+        sLevel newLevel = TileMapUtils.CreateLevel("", 0, tilemap, scores, levelSize);
 
-        var levelFile = ScriptableObject.CreateInstance<ScriptableLevel>();
+        ScriptableObjectUnity.SaveLevelFile($"Level {levelNum}", JsonUtility.ToJson(newLevel));
 
-        levelFile.name = $"/Level {levelNum}";
-        levelFile.jsonFile = JsonUtility.ToJson(newLevel);
+        Debug.Log("Level Saved! :)");
+    }
 
-        print(levelFile.jsonFile);
+    public void SaveNewMapInEditor()
+    {
+        sLevel newLevel = TileMapUtils.CreateLevel("", 0, tilemap, scores, levelSize);
 
-        ScriptableObjectUnity.SaveLevelFile(levelFile);
+        levelNum = 1;
+        while (File.Exists($"Assets/Resources/Levels/Level {levelNum}.json"))
+            levelNum++;
+
+        ScriptableObjectUnity.SaveLevelFile($"Level {levelNum}", JsonUtility.ToJson(newLevel));
 
         Debug.Log("Level Saved! :)");
     }
@@ -78,7 +87,8 @@ public class LevelManager : MonoBehaviour
     {
         print($"Loading Level {lvlNum}");
 
-        sLevel level = GetSLevelFromFile(lvlNum);
+        sLevel level;
+        level = GetSLevelFromFile(lvlNum);
 
         Debug.Assert(lvlNum == level.levelIndex);
 
@@ -86,12 +96,33 @@ public class LevelManager : MonoBehaviour
 
         Debug.Log($"{lvlNum} Loaded! :)");
     }
+
+    public void SaveOnlineData()
+    {
+        int i = 0;
+        foreach (sLevel level in LevelsController.onlineLevelsList)
+        {
+            i++;
+            string name = "online/" + i + ". " + level.levelName + "  " + level.levelId;
+            level.creatorName = "";
+            level.levelName = "";
+            level.levelIndex = 0;
+            level.levelId = "";
+            ScriptableObjectUnity.SaveLevelFile(name, JsonUtility.ToJson(level));
+
+        }
+    }
 #endif
 
+    public static LevelTile GetTile(Vector3Int mapPos)
+    {
+        return (LevelTile)Instance.tilemap.GetTile(mapPos);
+    }
 
     public void LoadBase()
     {
         ClearMap();
+        TileMapUtils.ChangeCameraSize(levelCamera, levelSize);
         TileMapUtils.LoadMapBorders(tilemap, true, levelSize);
     }
 
@@ -104,14 +135,18 @@ public class LevelManager : MonoBehaviour
             map.ClearAllTiles();
         }
 
-        goalTiles.Clear();
+        if (goalTiles != null)
+            goalTiles.Clear();
     }
 
     public void LoadMap(sLevel level, bool editing)
     {
+        Debug.Log("Loading map");
         ClearMap();
 
         TileMapUtils.LoadMapBorders(tilemap, editing, level.levelSize);
+
+        TileMapUtils.ChangeCameraSize(levelCamera, level.levelSize);
 
         scores = level.score;
         levelSize = level.levelSize;
@@ -142,6 +177,14 @@ public class LevelManager : MonoBehaviour
                         spawnAndMovePlayer(savedTile.position, type);
                     break;
 
+                case TileType.MovableBlock:
+                    if (editing)
+                        TileMapUtils.SetTile(tilemap, savedTile.position, type);
+                    else
+                        SpawnAndMoveEntity(savedTile.position);
+                    break;
+
+
                 default:
                     TileMapUtils.SetTile(tilemap, savedTile.position, type);
                     break;
@@ -149,6 +192,15 @@ public class LevelManager : MonoBehaviour
         }
 
         setGoalTiles();
+
+        void SpawnAndMoveEntity(Vector2Int tilePos)
+        {
+            Instantiate(
+                    movableBlockPrefab,
+                    new Vector3(tilePos.x + 0.5f, tilePos.y + 0.5f, 0),
+                    Quaternion.identity,
+                    GameObject.Find("/Players").transform);
+        }
 
         void spawnAndMovePlayer(Vector2Int tilePos, TileType type)
         {
@@ -192,18 +244,20 @@ public class LevelManager : MonoBehaviour
     public static sLevel GetSLevelFromFile(int lvlNum)
     {
         // locate file from resources
-        var levelFile = Resources.Load<ScriptableLevel>($"Levels/Level {lvlNum}");
+        var levelFile = Resources.Load<TextAsset>($"Levels/Level {lvlNum}");
         if (levelFile == null)
         {
             Debug.LogError($"Level {lvlNum} does not exist");
             return new sLevel();
         }
 
-        Debug.Log(levelFile.jsonFile);
-        
-        return JsonUtility.FromJson<sLevel>(levelFile.jsonFile);
-    }
+        Debug.Log(levelFile.text);
 
+        sLevel level = JsonUtility.FromJson<sLevel>(levelFile.text);
+        level.levelIndex = lvlNum;
+        level.levelName = $"W{LevelsController.getWorldNum(lvlNum) + 1} - Level {LevelsController.getRealLevelNum(lvlNum)}";
+        return level;
+    }
 
 
     private void setGoalTiles()
@@ -216,7 +270,7 @@ public class LevelManager : MonoBehaviour
     public void RestartLevel()
     {
         foreach (GameObject player in GameObject.FindGameObjectsWithTag("Player"))
-            player.GetComponent<PlayerController>().reset();
+            player.GetComponent<MovableObject>().ResetObj();
 
         GameController.Instance.resetGame();
         setGoalTiles();
@@ -229,11 +283,14 @@ public class LevelManager : MonoBehaviour
 
 public static class ScriptableObjectUnity
 {
-    public static void SaveLevelFile(ScriptableLevel level)
+    public static void SaveLevelFile(string name, string level)
     {
-        AssetDatabase.CreateAsset(level, $"Assets/Resources/Levels/{level.name}.asset");
+        StreamWriter stream = File.CreateText($"Assets/Resources/Levels/{name}.json");
 
-        AssetDatabase.SaveAssets();
+        stream.Write(level);
+
+        stream.Close();
+
         AssetDatabase.Refresh();
     }
 }

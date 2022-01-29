@@ -17,12 +17,12 @@ public class LevelControllerUI : MonoBehaviour
         {
             if (LevelsController.levelMedals.Length < levelId)
             {
-                // image.sprite = Resources.LoadAll<Sprite>("Other/Stars")[0];
+                // image.sprite = Resources.LoadAll<Sprite>("UI/stars")[0];
                 Debug.Log("User medal " + levelId + " not found");
                 return;
             }
 
-            image.sprite = Resources.LoadAll<Sprite>("Other/Stars")[(int)LevelsController.levelMedals[levelId]];
+            image.sprite = Resources.LoadAll<Sprite>("UI/stars")[(int)LevelsController.levelMedals[levelId]];
         }
         else
         {
@@ -31,7 +31,7 @@ public class LevelControllerUI : MonoBehaviour
 
         locked = LevelsController.lastLevelCompleted + 1 < levelId;
 
-        GetComponent<CanvasGroup>().alpha = locked ? 0.5f : 1f;
+        GetComponent<CanvasGroup>().interactable = !locked;
 
     }
 
@@ -39,7 +39,6 @@ public class LevelControllerUI : MonoBehaviour
     {
         if (!locked)
         {
-            AudioManager.Instance.PlaySound(AudioManager.eSound.Select);
             SceneLoader.Instance.LoadLevel(levelId);
         }
     }

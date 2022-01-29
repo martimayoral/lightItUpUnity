@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: BlockedGround
   m_EditorClassIdentifier: 
   m_AnimatedSprites:
-  - {fileID: -3642208251427772964, guid: f00e744daab8141458068bb4419ba106, type: 3}
+  - {fileID: -3642208251427772964, guid: 0a613bc563f8cab4f99df8f488caf1c2, type: 3}
   m_MinSpeed: 7
   m_MaxSpeed: 7
   m_AnimationStartTime: 0

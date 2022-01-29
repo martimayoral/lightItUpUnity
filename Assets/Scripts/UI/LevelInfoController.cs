@@ -29,7 +29,7 @@ public class LevelInfoController : MonoBehaviour
         if (SaveOnlineInfo.levelsPlayed.ContainsKey(levelInfo.levelId))
         {
             medalType medal = SaveOnlineInfo.levelsPlayed[levelInfo.levelId];
-            medalImage.sprite = Resources.LoadAll<Sprite>("Other/Stars")[(int)medal];
+            medalImage.sprite = Resources.LoadAll<Sprite>("UI/stars")[(int)medal];
         }
 
     }

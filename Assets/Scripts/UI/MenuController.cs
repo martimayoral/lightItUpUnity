@@ -3,10 +3,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class MenuController : MonoBehaviour
 {
     Animator animator;
+
+    [Header("Campaign Levels")]
+    [SerializeField] WorldUIController[] worldUIControllers;
+    [SerializeField] CanvasGroup nextWorldButton;
+    [SerializeField] CanvasGroup prevWorldButton;
+    [SerializeField] TextMeshProUGUI offlineNumStars;
 
     [Header("Levels Online")]
     [SerializeField] Transform levelInfo;
@@ -14,25 +21,60 @@ public class MenuController : MonoBehaviour
     [SerializeField] GameObject loadMoreLevels;
     [SerializeField] Button loadMoreLevelsButton;
     [SerializeField] ScrollRect levelsScrollRect;
+    [SerializeField] TextMeshProUGUI onlineNumStars;
 
     [Header("Settings Panel")]
     [SerializeField] GameObject loggedInUI;
     [SerializeField] GameObject logInUI;
     [SerializeField] Animator settingsPanelAnimator;
 
+
     public static MenuController Instance;
+
+    public enum eMenuPanel
+    {
+        SELECTION,
+        WORLDS,
+        USER_LEVELS
+    }
+    public static eMenuPanel startingPanel = eMenuPanel.SELECTION;
 
     void Awake()
     {
         Instance = this;
         LevelsController.InitOnlineLevelsList();
+        animator = GetComponent<Animator>();
     }
 
     private void Start()
     {
-        animator = GetComponent<Animator>();
         UpdateLoggingUI();
         RefreshUserLevels();
+
+        if (LevelsController.currentWorld == 0)
+            prevWorldButton.interactable = false;
+        if (LevelsController.currentWorld == worldUIControllers.Length - 1)
+            nextWorldButton.interactable = false;
+
+        offlineNumStars.text = LevelsController.numOfflineStars.ToString();
+        onlineNumStars.text = LevelsController.GetNumOnlineStars().ToString();
+        StartPanel();
+    }
+
+    void StartPanel()
+    {
+        switch (startingPanel)
+        {
+            case eMenuPanel.WORLDS:
+                animator.SetTrigger("Worlds");
+                break;
+            case eMenuPanel.USER_LEVELS:
+                animator.SetTrigger("UserLevels");
+                break;
+            default:
+                break;
+        }
+        startingPanel = eMenuPanel.SELECTION;
     }
 
     public void ExitApp()
@@ -72,7 +114,6 @@ public class MenuController : MonoBehaviour
 
     public void BtnChangePanel(string triger)
     {
-        AudioManager.Instance.PlaySound(AudioManager.eSound.Select);
         animator.SetTrigger(triger);
     }
 
@@ -111,18 +152,14 @@ public class MenuController : MonoBehaviour
     // refresh the UI, not the list
     public void RefreshUserLevels(int start = 0)
     {
-
-        DBGText.Write("A1");
+        Debug.Log("Refreshing user levels");
         if (start == 0)
             ClearUserLevels();
 
-        DBGText.Write("A2");
         int added = 0;
 
-        DBGText.Write("A3: " + LevelsController.onlineLevelsList.Count);
         for (int i = start; i < LevelsController.onlineLevelsList.Count; i++)
         {
-            DBGText.Write("A4." + i);
             sLevel level = LevelsController.onlineLevelsList[i];
             if (!LevelsController.LevelIsFiltered(level))
             {
@@ -131,14 +168,18 @@ public class MenuController : MonoBehaviour
             }
 
         }
-        DBGText.Write("A3");
         loadMoreLevels.transform.SetAsLastSibling();
 
-        // if there was no many added, we add more, populating the levels
-        //  if ((added < (UserConfig.onlineLoadBatchSize * 0.5)) && loadMoreLevelsButton.interactable)
-        //  {
-        //      PopulateUserLevels();
-        //  }
+        //if there was no many added, we add more, populating the levels
+        if (LevelsController.onlineLevelsList.Count != 0 && UserConfig.onlineMedalsOptions[(int)medalType.none])
+        {
+            Debug.Log($"Added: {added} < {UserConfig.onlineLoadBatchSize * 0.5}?");
+            if ((added < (UserConfig.onlineLoadBatchSize * 0.5)) && loadMoreLevelsButton.interactable)
+            {
+                Debug.Log("Yes!");
+                PopulateUserLevels();
+            }
+        }
 
     }
 
@@ -178,8 +219,7 @@ public class MenuController : MonoBehaviour
                     }
                     DBGText.Write("H");
                     DBGText.Write("ACTION end");
-                },
-            UserConfig.onlineLoadBatchSize);
+                });
 
     }
 
@@ -190,5 +230,48 @@ public class MenuController : MonoBehaviour
             ResetUserLevelsList();
 
     }
+
+    public void NextWorld()
+    {
+        int nextWorld = LevelsController.currentWorld + 1;
+        if (nextWorld >= worldUIControllers.Length)
+        {
+            Debug.LogError("World not found");
+            return;
+        }
+
+        worldUIControllers[LevelsController.currentWorld].OutLeft();
+        worldUIControllers[nextWorld].InRight();
+
+        if (nextWorld == worldUIControllers.Length - 1)
+        {
+            nextWorldButton.interactable = false;
+        }
+
+        prevWorldButton.interactable = true;
+
+        LevelsController.currentWorld = nextWorld;
+    }
+
+    public void PrevWorld()
+    {
+        int prevWorld = LevelsController.currentWorld - 1;
+        if (prevWorld < 0)
+        {
+            Debug.LogError("World not found");
+            return;
+        }
+
+        worldUIControllers[LevelsController.currentWorld].OutRight();
+        worldUIControllers[prevWorld].InLeft();
+
+        if (prevWorld == 0)
+            prevWorldButton.interactable = false;
+
+        nextWorldButton.interactable = true;
+
+        LevelsController.currentWorld = prevWorld;
+    }
+
 
 }

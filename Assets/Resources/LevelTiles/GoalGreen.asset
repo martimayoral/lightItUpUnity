@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: GoalGreen
   m_EditorClassIdentifier: 
   m_AnimatedSprites:
-  - {fileID: 7477116942032994148, guid: f00e744daab8141458068bb4419ba106, type: 3}
-  - {fileID: -396035294860175646, guid: f00e744daab8141458068bb4419ba106, type: 3}
-  - {fileID: 8233071653059976297, guid: f00e744daab8141458068bb4419ba106, type: 3}
+  - {fileID: -396035294860175646, guid: 0a613bc563f8cab4f99df8f488caf1c2, type: 3}
+  - {fileID: 8233071653059976297, guid: 0a613bc563f8cab4f99df8f488caf1c2, type: 3}
+  - {fileID: -7775419718026629507, guid: 0a613bc563f8cab4f99df8f488caf1c2, type: 3}
   m_MinSpeed: 5
   m_MaxSpeed: 5
   m_AnimationStartTime: 0

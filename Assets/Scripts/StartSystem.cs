@@ -26,6 +26,7 @@ public class StartSystem : MonoBehaviour
         DBGText.Write("Done!");
 
         DBGText.Write("Loading user data and config...");
+        SaveHelpText.LoadHelpTextData();
         LevelsController.LoadData();
         SaveUserConfig.LoadUserConfigData();
         DBGText.Write("Done!");

@@ -16,7 +16,7 @@ public class PauseMenu : MonoBehaviour
     public TextMeshProUGUI nextLevelText;
     public TextMeshProUGUI nextLevelName;
 
-    bool campaignMode;
+    bool currentLevelOnline;
 
     static public PauseMenu Instance { get; private set; }
 
@@ -34,15 +34,19 @@ public class PauseMenu : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        starsSprites = Resources.LoadAll<Sprite>("Other/Stars");
+        starsSprites = Resources.LoadAll<Sprite>("UI/stars");
         getMoreMovesButton.interactable = true;
 
+        currentLevelOnline = LevelsController.CurrentLevelIsOnline();
+
+        LevelManager.Instance.LoadMap(LevelsController.currentLevel, false);
+
+        // start all objects and values
+        GameController.Instance.HardResetGame();
+
+        GameController.gameState = eGameState.Play;
     }
 
-    void PlayBtnSelect()
-    {
-        AudioManager.Instance.PlaySound(AudioManager.eSound.Select);
-    }
 
     public void BtnPause()
     {
@@ -50,7 +54,6 @@ public class PauseMenu : MonoBehaviour
             return;
 
         Debug.Log("PAUSING...");
-        PlayBtnSelect();
 
         GameController.gameState = eGameState.Pause;
         Time.timeScale = 0f;
@@ -74,7 +77,6 @@ public class PauseMenu : MonoBehaviour
 
     public void BtnResume()
     {
-        PlayBtnSelect();
         Resume();
     }
 
@@ -82,14 +84,12 @@ public class PauseMenu : MonoBehaviour
     {
         Time.timeScale = 1f;
 
-        PlayBtnSelect();
         Debug.Log("LOADING MENU...");
-        SceneLoader.Instance.LoadMenu();
+        SceneLoader.Instance.LoadMenu(currentLevelOnline ? MenuController.eMenuPanel.USER_LEVELS : MenuController.eMenuPanel.WORLDS);
     }
 
     public void BtnRestart()
     {
-        PlayBtnSelect();
         LevelManager.Instance.RestartLevel();
         getMoreMovesButton.interactable = true;
         Resume();
@@ -106,18 +106,60 @@ public class PauseMenu : MonoBehaviour
     {
         Debug.Log("WIN...");
 
+        bool nextWorldUnlocked = false;
+        int nextWorldNum = -1;
+
+        if (!currentLevelOnline)
+            nextWorldNum = LevelsController.getCurrentWorldNum() + 1;
+        // check if the next world is unlocked
+
+        if (!currentLevelOnline && LevelsController.isWorldLocked(nextWorldNum))
+            nextWorldUnlocked = true;
+
         LevelsController.changeMedal(LevelsController.currentLevel.levelIndex, medal);
 
+        // check if when changed the medal, the next world is unlocked
+        if (!currentLevelOnline && LevelsController.isWorldLocked(nextWorldNum))
+        {
+            nextWorldUnlocked = !nextWorldUnlocked;
+        }
+
         sLevel nextLevel = LevelsController.GetNextLevel();
+
         if (nextLevel != null)
         {
+            nextLevelText.text = "Next Level ->";
             nextLevelName.text = nextLevel.levelName;
+            nextLevelButton.interactable = true;
+
+            if (nextWorldUnlocked)
+            {
+                nextLevelText.text = "World unlocked!";
+                nextLevelName.text = "Go to the menu to check it out!";
+                nextLevelButton.interactable = false;
+            }
+
+            if (!currentLevelOnline && LevelsController.isWorldLocked(LevelsController.getWorldNum(nextLevel)))
+            {
+                nextLevelText.text = "Blocked!";
+                nextLevelName.text = "Next level is blocked";
+                nextLevelButton.interactable = false;
+            }
         }
         else
         {
             nextLevelText.text = "Congratulations!";
             nextLevelName.text = "More levels comming soon...";
             nextLevelButton.interactable = false;
+
+            if (currentLevelOnline)
+            {
+                CloudFirestore.Instance.PopulateListAndDoActionAsync((isLast) =>
+                {
+                    if (!isLast)
+                        Win(medal);
+                });
+            }
         }
 
         animator.SetTrigger("Win");
@@ -128,22 +170,20 @@ public class PauseMenu : MonoBehaviour
 
     public void BtnNextLevel()
     {
-        PlayBtnSelect();
         Debug.Log("Next level...");
-
+        nextLevelButton.interactable = false;
         SceneLoader.Instance.LoadNextLevel();
     }
 
     public void BtnAdToWinMoves()
     {
-        PlayBtnSelect();
         AdsManager.Instance.PlayRewardedAdd(onRewardedAddSuccess);
 
         void onRewardedAddSuccess()
         {
             Debug.Log("On reward success");
             GameController.Instance.addMoves(3);
-            PauseMenu.Instance.Resume();
+            Instance.Resume();
             getMoreMovesButton.interactable = false;
         }
     }

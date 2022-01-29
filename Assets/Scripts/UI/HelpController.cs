@@ -9,90 +9,53 @@ public class HelpController : MonoBehaviour
 
     Animator animator;
 
-    enum eHelpAction
-    {
-        Begin,
-        Change,
-        Clear,
-        End
-    }
+    Dictionary<int, helpMsg> helpTexts;
 
-    struct sHelpMsg
-    {
-        public eHelpAction action;
-        public string message;
-        public TextMeshProUGUI target;
-        public sHelpMsg(TextMeshProUGUI target, eHelpAction action, string message)
-        {
-            this.target = target;
-            this.action = action;
-            this.message = message;
-        }
-        public sHelpMsg(eHelpAction action)
-        {
-            this.action = action;
-            this.target = null;
-            this.message = null;
-        }
-    }
-
-    Dictionary<int, sHelpMsg> helpTexts;
 
     // Start is called before the first frame update
     void Start()
     {
+        if (LevelsController.CurrentLevelIsOnline())
+            Destroy(gameObject);
+
+        if (SaveHelpText.levelMsgs.ContainsKey(LevelsController.currentLevel.levelIndex))
+            helpTexts = SaveHelpText.levelMsgs[LevelsController.currentLevel.levelIndex];
+        else
+            Destroy(gameObject);
+
         animator = GetComponent<Animator>();
 
-        helpTexts = new Dictionary<int, sHelpMsg>();
-
-        switch (LevelsController.currentLevel.levelIndex)
-        {
-            case 1:
-                helpTexts.Add(0, new sHelpMsg(centeredText, eHelpAction.Begin, "Drag -> to move all light bulbs"));
-                helpTexts.Add(5, new sHelpMsg(eHelpAction.Clear));
-                break;
-            case 2:
-                helpTexts.Add(7, new sHelpMsg(centeredText, eHelpAction.Begin, "Try making as less moves as possible!"));
-                helpTexts.Add(14, new sHelpMsg(eHelpAction.End));
-                break;
-            case 3:
-                helpTexts.Add(0, new sHelpMsg(centeredText, eHelpAction.Begin, "The light bulbs collide with eachother"));
-                helpTexts.Add(10, new sHelpMsg(eHelpAction.End));
-                break;
-            default:
-                Destroy(this.gameObject);
-                break;
-        }
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (helpTexts == null)
+            return;
+
         int key = GameController.Instance.movesCount;
+
+
         if (helpTexts.ContainsKey(key))
         {
-            sHelpMsg helpMsg = helpTexts[key];
+            helpMsg helpMsg = helpTexts[key];
             helpTexts.Remove(key);
 
             Debug.Log(key + " , " + helpMsg.action);
 
             switch (helpMsg.action)
             {
-                case eHelpAction.Begin:
+                case "Begin":
                     animator.SetTrigger("In");
-                    helpMsg.target.text = helpMsg.message;
+                    centeredText.text = helpMsg.message;
                     break;
-                case eHelpAction.Change:
+                case "Change":
                     animator.SetTrigger("Out");
-                    StartCoroutine(WaitToChangeText(helpMsg.target, helpMsg.message, 0.25f));
+                    StartCoroutine(WaitToChangeText(helpMsg.message, 0.25f));
                     StartCoroutine(WaitToTriggerAnimation("In", 0.25f));
                     break;
-                case eHelpAction.Clear:
+                case "End":
                     animator.SetTrigger("Out");
-                    break;
-                case eHelpAction.End:
-                    animator.SetTrigger("Out");
-                    Destroy(this.gameObject, 1f);
                     break;
                 default:
                     break;
@@ -100,10 +63,10 @@ public class HelpController : MonoBehaviour
         }
     }
 
-    IEnumerator WaitToChangeText(TextMeshProUGUI target, string message, float time)
+    IEnumerator WaitToChangeText(string message, float time)
     {
         yield return new WaitForSecondsRealtime(time);
-        target.text = message;
+        centeredText.text = message;
     }
     IEnumerator WaitToTriggerAnimation(string animationTrigger, float time)
     {

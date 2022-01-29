@@ -146,17 +146,17 @@ public class CloudFirestore : MonoBehaviour
     }
 
     public static DocumentSnapshot latestDoc;
-    public void PopulateListAndDoActionAsync(Action<bool> action, int n)
+    public void PopulateListAndDoActionAsync(Action<bool> action)
     {
         Debug.Log("Start at " + LevelsController.onlineLevelsList.Count);
 
         Query allLevelsQuery;
-        
+
 
         if (latestDoc != null)
-            allLevelsQuery = db.Collection("Levels").OrderBy("Name").StartAfter(latestDoc).Limit(n);
+            allLevelsQuery = db.Collection("Levels").OrderBy("Name").StartAfter(latestDoc).Limit(UserConfig.onlineLoadBatchSize);
         else
-            allLevelsQuery = db.Collection("Levels").OrderBy("Name").Limit(n);
+            allLevelsQuery = db.Collection("Levels").OrderBy("Name").Limit(UserConfig.onlineLoadBatchSize);
 
         StartCoroutine(PLADAA());
 
@@ -173,7 +173,7 @@ public class CloudFirestore : MonoBehaviour
 
             DBGText.Write("Query result: " + task.Result);
 
-            if(task.Exception != null)
+            if (task.Exception != null)
                 DBGText.Write("QUERY EXCEPTION: " + task.Exception);
 
             int count = 0;
@@ -197,7 +197,7 @@ public class CloudFirestore : MonoBehaviour
                 DBGText.Write("Level Added");
                 LevelsController.onlineLevelsList.Add(slevel);
             }
-            bool isLast = n != count;
+            bool isLast = UserConfig.onlineLoadBatchSize != count;
 
             DBGText.Write("Invoke Action");
             action.Invoke(isLast);

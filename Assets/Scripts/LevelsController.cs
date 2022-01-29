@@ -7,15 +7,29 @@ public static class LevelsController
     public static medalType[] levelMedals { get; private set; }
     public static int lastLevelCompleted { get; private set; }
 
-    public const int nLevels = 17;
+    public static int numOfflineStars;
+
+    public static int currentWorld = 0;
+    readonly static public int[] worldMinStars = { 0, 16 * 3 - 12, 16 * 6 - 3 };
+    public static readonly int nLevels = 33;
 
     public static sLevel currentLevel { get; private set; }
+
     public static List<sLevel> onlineLevelsList { get; private set; }
 
     public static void InitOnlineLevelsList()
     {
         if (onlineLevelsList == null)
             onlineLevelsList = new List<sLevel>();
+    }
+
+    public static int GetNumOnlineStars()
+    {
+        int stars = 0;
+        foreach (int score in SaveOnlineInfo.levelsPlayed.Values)
+            stars += score;
+
+        return stars;
     }
 
     /// <summary>
@@ -48,7 +62,12 @@ public static class LevelsController
     /// </summary>
     public static bool CurrentLevelIsOnline()
     {
-        return currentLevel.levelId != null;
+        return LevelIsOnline(currentLevel);
+    }
+
+    public static bool LevelIsOnline(sLevel level)
+    {
+        return level.levelId.Length > 0;
     }
 
     public static void ChangeCurrentLevelForNext()
@@ -138,20 +157,68 @@ public static class LevelsController
 
 
         levelMedals = new medalType[nLevels];
+        numOfflineStars = 0;
 
         for (int i = 0; i < levelMedals.Length; i++)
         {
-            levelMedals[i] = (medalType)data.levelMedals[i];
+            int thisLevelMedal;
+            if (i < data.levelMedals.Length)
+                thisLevelMedal = data.levelMedals[i];
+            else
+                thisLevelMedal = 0;
+
+            levelMedals[i] = (medalType)thisLevelMedal;
+            numOfflineStars += thisLevelMedal;
         }
 
     }
 
+    public static bool isWorldLocked(int worldNum)
+    {
+        if (worldNum >= worldMinStars.Length)
+        {
+            Debug.Log($"World {worldNum} not found");
+            return true;
+        }
+
+        return numOfflineStars < worldMinStars[worldNum];
+    }
+
+    public static int getWorldNum(int levelNum)
+    {
+        Debug.Log($"Level {levelNum} is of the world {Mathf.FloorToInt((levelNum - 1) / 16)}");
+        return Mathf.FloorToInt((levelNum - 1) / 16);
+    }
+
+    public static int getRealLevelNum(int levelNum)
+    {
+        return ((levelNum - 1) % 16) + 1;
+    }
+
+    public static int getCurrentWorldNum()
+    {
+        Debug.Assert(!CurrentLevelIsOnline());
+        return getWorldNum(currentLevel.levelIndex);
+    }
+
+    public static int getWorldNum(sLevel level)
+    {
+        if (LevelIsOnline(level))
+        {
+            Debug.LogWarning("Trying to get the world num of an online level");
+            return 0;
+        }
+
+        return getWorldNum(level.levelIndex);
+    }
+
+
     /// <summary>
     /// Changes the medal type of a local level
     /// </summary>
-    /// <param name="level">the level number</param>
+    /// <param name="levelNum">the level number</param>
     /// <param name="medalType">the medal type to assign</param>
-    public static void changeMedal(int level, medalType medalType)
+    public static void changeMedal(int levelNum, medalType medalType)
     {
         if (CurrentLevelIsOnline())
         {
@@ -159,14 +226,16 @@ public static class LevelsController
         }
         else
         {
-            lastLevelCompleted = Mathf.Max(level, lastLevelCompleted);
+            lastLevelCompleted = Mathf.Max(levelNum, lastLevelCompleted);
 
-            if (levelMedals[level] >= medalType)
+            if (levelMedals[levelNum] >= medalType)
                 return;
+
+            numOfflineStars += medalType - levelMedals[levelNum];
 
             Debug.Log($"Changing medal ({medalType})");
 
-            levelMedals[level] = medalType;
+            levelMedals[levelNum] = medalType;
 
             SaveSystem.SaveLevelsData();
         }

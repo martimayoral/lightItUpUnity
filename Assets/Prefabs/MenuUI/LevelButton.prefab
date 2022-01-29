@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 6126170474790490814}
   - component: {fileID: 6092328864514532471}
   - component: {fileID: 8741804649474663613}
+  - component: {fileID: 5726256227525297718}
   m_Layer: 5
   m_Name: LevelButton
   m_TagString: Untagged
@@ -159,7 +160,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 471487566591490048}
   m_Enabled: 1
-  m_Alpha: 0.5
+  m_Alpha: 1
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
@@ -182,6 +183,19 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!114 &5726256227525297718
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 471487566591490048}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c1974a8f1a9eb9e45a2c0ffed52b7109, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sound: 1
 --- !u!1 &855082564318294444
 GameObject:
   m_ObjectHideFlags: 0
@@ -381,7 +395,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 6326231466481203021, guid: e8b9bd68afe07d341be08c2d881433d2, type: 3}
+  m_Sprite: {fileID: 6326231466481203021, guid: 0e40684d87c22144eb20dac3421e9e81, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
