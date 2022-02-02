@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 81c625df46967e54392b5a841e0ef3cc, type: 3}
+  m_Name: HintArrowLB
+  m_EditorClassIdentifier: 
+  m_AnimatedSprites:
+  - {fileID: 4014969335939488907, guid: 61deff730a88dd34b9de99d1dfe5fbaa, type: 3}
+  - {fileID: 2035751091893940942, guid: 61deff730a88dd34b9de99d1dfe5fbaa, type: 3}
+  - {fileID: 1531243112075055013, guid: 61deff730a88dd34b9de99d1dfe5fbaa, type: 3}
+  - {fileID: -1064131505646981480, guid: 61deff730a88dd34b9de99d1dfe5fbaa, type: 3}
+  - {fileID: -7582908801922619966, guid: 61deff730a88dd34b9de99d1dfe5fbaa, type: 3}
+  - {fileID: 8397875370371711116, guid: 61deff730a88dd34b9de99d1dfe5fbaa, type: 3}
+  m_MinSpeed: 6
+  m_MaxSpeed: 6
+  m_AnimationStartTime: 0
+  m_AnimationStartFrame: 0
+  m_TileColliderType: 0
+  type: 10004

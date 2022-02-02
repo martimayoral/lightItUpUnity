@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 public static class LevelsController
@@ -14,8 +15,13 @@ public static class LevelsController
     public static readonly int nLevels = 33;
 
     public static sLevel currentLevel { get; private set; }
+    // hints
+    public static int hintNum = 0;
 
     public static List<sLevel> onlineLevelsList { get; private set; }
+
+
+
 
     public static void InitOnlineLevelsList()
     {
@@ -96,6 +102,14 @@ public static class LevelsController
     {
         Debug.Log("Change current level for " + currentLevel.levelIndex);
         LevelsController.currentLevel = currentLevel;
+    }
+
+    public static void LoadHint()
+    {
+        hintNum++;
+        Debug.Log("Exists " + $"Assets/Resources/HintLevels/Level {currentLevel.levelIndex}.{hintNum + 1}.json? " + File.Exists($"Assets/Resources/HintLevels/Level {currentLevel.levelIndex}.{hintNum + 1}.json").ToString());
+        PauseMenu.hintAvailable = File.Exists($"Assets/Resources/HintLevels/Level {currentLevel.levelIndex}.{hintNum + 1}.json");
+        ChangeCurrentLevel(LevelManager.GetSLevelFromFile($"HintLevels/Level {currentLevel.levelIndex}.{hintNum}", currentLevel.levelIndex));
     }
 
     public static sLevel GetNextLevel()

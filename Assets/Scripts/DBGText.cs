@@ -6,13 +6,20 @@ using TMPro;
 public class DBGText : MonoBehaviour
 {
     public static TextMeshProUGUI text;
+    public TextMeshProUGUI thisText;
+
     static string messages;
     readonly static bool DBG = false;
 
     private void Awake()
     {
-        text = GetComponent<TextMeshProUGUI>();
+        text = thisText;
         text.text = messages ?? "";
+
+        if (DBG)
+            DontDestroyOnLoad(this);
+        else
+            Destroy(this);
     }
 
     public static void Write(string msg)
@@ -23,6 +30,7 @@ public class DBGText : MonoBehaviour
 
     private void Update()
     {
-        text.text = messages;
+        if (DBG)
+            text.text = messages;
     }
 }

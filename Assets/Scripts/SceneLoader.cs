@@ -46,12 +46,12 @@ public class SceneLoader : MonoBehaviour
     public void LoadNextLevel()
     {
         LevelsController.ChangeCurrentLevelForNext();
-        StartCoroutine(LoadScene("Game"));
+        LoadLevel();
     }
     public void LoadLevel(sLevel slevel)
     {
         LevelsController.ChangeCurrentLevel(slevel);
-        StartCoroutine(LoadScene("Game"));
+        LoadLevel();
     }
 
     public void LoadLevel(int ln)
@@ -59,13 +59,29 @@ public class SceneLoader : MonoBehaviour
         if (LevelsController.ChangeCurrentLevel(ln))
         {
             print("Level load Level " + ln);
-            StartCoroutine(LoadScene("Game"));
+            LoadLevel();
         }
         else
         {
             Debug.LogError("Trying to load a level that doesn't exist (" + ln + ")");
         }
     }
+
+    void LoadLevel()
+    {
+        Debug.Log("hint = 0");
+        LevelsController.hintNum = 0;
+        PauseMenu.hintAvailable = true;
+        StartCoroutine(LoadScene("Game"));
+    }
+
+    public void LoadHint()
+    {
+        LevelsController.LoadHint();
+        StartCoroutine(LoadScene("Game"));
+    }
+
+
 
     IEnumerator LoadScene(string sceneName)
     {

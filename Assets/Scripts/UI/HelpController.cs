@@ -10,7 +10,7 @@ public class HelpController : MonoBehaviour
     Animator animator;
 
     Dictionary<int, helpMsg> helpTexts;
-
+    int lastKeyUsed;
 
     // Start is called before the first frame update
     void Start()
@@ -24,7 +24,7 @@ public class HelpController : MonoBehaviour
             Destroy(gameObject);
 
         animator = GetComponent<Animator>();
-
+        lastKeyUsed = -1;
     }
 
     // Update is called once per frame
@@ -35,11 +35,12 @@ public class HelpController : MonoBehaviour
 
         int key = GameController.Instance.movesCount;
 
+        if (key <= lastKeyUsed) return;
 
         if (helpTexts.ContainsKey(key))
         {
             helpMsg helpMsg = helpTexts[key];
-            helpTexts.Remove(key);
+            lastKeyUsed = key;
 
             Debug.Log(key + " , " + helpMsg.action);
 

@@ -172,8 +172,9 @@ public class GameController : MonoBehaviour
             undoesToAd--;
             if (undoesToAd == 0)
             {
-                if (AdsManager.Instance)
-                    AdsManager.Instance.PlayAdd();
+                //if (AdsManager.Instance)
+                //    AdsManager.Instance.PlayAdd();
+                Debug.LogWarning("Ad undo?");
             }
         }
 

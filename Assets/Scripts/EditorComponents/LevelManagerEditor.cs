@@ -19,11 +19,18 @@ public class LevelManagerEditor : Editor
         if (GUILayout.Button("Save Map"))
         {
             script.SaveMapInEditor();
+            //Debug.LogWarning("DESACTIVAT");
         }
 
         if (GUILayout.Button("Save New map"))
         {
-            script.SaveNewMapInEditor();
+            Debug.LogWarning("DESACTIVAT");
+            //script.SaveNewMapInEditor();
+        }
+
+        if (GUILayout.Button("Save Hint Level"))
+        {
+            script.SaveHintMapInEditor();
         }
 
 
@@ -31,7 +38,11 @@ public class LevelManagerEditor : Editor
 
         if (GUILayout.Button("Load Map"))
         {
-            script.LoadMapInEditor(script.levelNum, true);
+            script.LoadMapInEditor(false);
+        }
+        if (GUILayout.Button("Load Hint Map"))
+        {
+            script.LoadMapInEditor(true);
         }
 
         GUILayout.Label("Other");

@@ -18,22 +18,23 @@ public class PauseMenu : MonoBehaviour
 
     bool currentLevelOnline;
 
+    // hints
+    public static bool hintAvailable;
+    [SerializeField] Button hintButton;
+
     static public PauseMenu Instance { get; private set; }
 
     private void Awake()
     {
         Instance = this;
-        AdsManager.Instance.ShowBanner();
     }
 
-    private void OnDestroy()
-    {
-        AdsManager.Instance.HideBanner();
-    }
 
     // Start is called before the first frame update
     void Start()
     {
+        BannerAd.Instance.ShowBannerAd();
+
         starsSprites = Resources.LoadAll<Sprite>("UI/stars");
         getMoreMovesButton.interactable = true;
 
@@ -44,9 +45,20 @@ public class PauseMenu : MonoBehaviour
         // start all objects and values
         GameController.Instance.HardResetGame();
 
+        hintButton.interactable = hintAvailable;
+
         GameController.gameState = eGameState.Play;
     }
 
+    public void GetHint()
+    {
+        Debug.Log("Gethint");
+        RewardedAds.Instance.ShowAd(() =>
+        {
+            hintButton.interactable = false;
+            SceneLoader.Instance.LoadHint();
+        });
+    }
 
     public void BtnPause()
     {
@@ -175,17 +187,20 @@ public class PauseMenu : MonoBehaviour
         SceneLoader.Instance.LoadNextLevel();
     }
 
-    public void BtnAdToWinMoves()
+    public void AdToWinMoves()
     {
-        AdsManager.Instance.PlayRewardedAdd(onRewardedAddSuccess);
-
-        void onRewardedAddSuccess()
+        Debug.Log("Ad to win moves");
+        RewardedAds.Instance.ShowAd(() =>
         {
             Debug.Log("On reward success");
             GameController.Instance.addMoves(3);
             Instance.Resume();
             getMoreMovesButton.interactable = false;
-        }
+        });
+    }
+    private void OnDestroy()
+    {
+        BannerAd.Instance.HideBannerAd();
     }
 
 

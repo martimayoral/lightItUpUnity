@@ -1,19 +1,29 @@
 using UnityEngine;
 using UnityEditor;
 using UnityEngine.UI;
+using TMPro;
 
 public class ToolSelectComponent : MonoBehaviour
 {
     public EditorController.Tool tool;
+    [SerializeField] int unlockAtWorld = 1;
+    [SerializeField] GameObject lockObj;
+    [SerializeField] TextMeshProUGUI lockText;
 
-    [HideInInspector]
-    public TileType type;
+    [HideInInspector] public TileType type;
 
     Image image;
 
     private void Awake()
     {
         image = GetComponent<Image>();
+
+        if (LevelsController.isWorldLocked(unlockAtWorld - 1))
+        {
+            lockObj.SetActive(true);
+            lockText.text = "w" + unlockAtWorld;
+            GetComponent<Button>().interactable = false;
+        }
     }
 
     public void setSelected(bool isSelected)

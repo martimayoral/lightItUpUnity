@@ -134,7 +134,7 @@ PlayerSettings:
     16:10: 1
     16:9: 1
     Others: 1
-  bundleVersion: 0.1
+  bundleVersion: 1.0
   preloadedAssets: []
   metroInputSource: 0
   wsaTransparentSwapchain: 0
@@ -159,7 +159,7 @@ PlayerSettings:
     iPhone: 0
     tvOS: 0
   overrideDefaultApplicationIdentifier: 0
-  AndroidBundleVersionCode: 1
+  AndroidBundleVersionCode: 2
   AndroidMinSdkVersion: 19
   AndroidTargetSdkVersion: 30
   AndroidPreferredInstallLocation: 1
@@ -261,7 +261,7 @@ PlayerSettings:
     banner: {fileID: 0}
   androidGamepadSupportLevel: 0
   chromeosInputEmulation: 1
-  AndroidMinifyWithR8: 0
+  AndroidMinifyWithR8: 1
   AndroidMinifyRelease: 1
   AndroidMinifyDebug: 1
   AndroidValidateAppBundleSize: 1
@@ -759,7 +759,7 @@ PlayerSettings:
   cloudProjectId: f2994a9b-b4d3-473b-9c08-e6e9aa5fc888
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: Light It Up (1)
+  projectName: Light It Up
   organizationId: mayocornio
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0

@@ -59,13 +59,23 @@ public class LevelManager : MonoBehaviour
 
 
 #if UNITY_EDITOR
+    [Header("EDITOR")]
     public int levelNum;
+    public int hintVersion;
 
     public void SaveMapInEditor()
     {
         sLevel newLevel = TileMapUtils.CreateLevel("", 0, tilemap, scores, levelSize);
 
-        ScriptableObjectUnity.SaveLevelFile($"Level {levelNum}", JsonUtility.ToJson(newLevel));
+        SaveLevelFile($"Level {levelNum}", JsonUtility.ToJson(newLevel));
+
+        Debug.Log("Level Saved! :)");
+    }
+    public void SaveHintMapInEditor()
+    {
+        sLevel newLevel = TileMapUtils.CreateLevel("", 0, tilemap, scores, levelSize);
+
+        SaveHintLevelFile($"Level {levelNum}.{hintVersion}", JsonUtility.ToJson(newLevel));
 
         Debug.Log("Level Saved! :)");
     }
@@ -78,24 +88,28 @@ public class LevelManager : MonoBehaviour
         while (File.Exists($"Assets/Resources/Levels/Level {levelNum}.json"))
             levelNum++;
 
-        ScriptableObjectUnity.SaveLevelFile($"Level {levelNum}", JsonUtility.ToJson(newLevel));
+        SaveLevelFile($"Level {levelNum}", JsonUtility.ToJson(newLevel));
 
         Debug.Log("Level Saved! :)");
     }
 
-    public void LoadMapInEditor(int lvlNum, bool editing = false)
+    public void LoadMapInEditor(bool hint)
     {
-        print($"Loading Level {lvlNum}");
+        print($"Loading Level {levelNum}");
 
         sLevel level;
-        level = GetSLevelFromFile(lvlNum);
+        if (hint)
+            level = GetSLevelFromFile($"HintLevels/Level {levelNum}.{hintVersion}", levelNum);
+        else
+            level = GetSLevelFromFile(levelNum);
 
-        Debug.Assert(lvlNum == level.levelIndex);
 
-        LoadMap(level, editing);
+        LoadMap(level, true);
 
-        Debug.Log($"{lvlNum} Loaded! :)");
+        Debug.Log($"{levelNum} Loaded! :)");
     }
+
+
 
     public void SaveOnlineData()
     {
@@ -108,9 +122,30 @@ public class LevelManager : MonoBehaviour
             level.levelName = "";
             level.levelIndex = 0;
             level.levelId = "";
-            ScriptableObjectUnity.SaveLevelFile(name, JsonUtility.ToJson(level));
+            SaveLevelFile(name, JsonUtility.ToJson(level));
 
         }
+    }
+
+    public static void SaveLevelFile(string name, string level)
+    {
+        StreamWriter stream = File.CreateText($"Assets/Resources/Levels/{name}.json");
+
+        stream.Write(level);
+
+        stream.Close();
+
+        AssetDatabase.Refresh();
+    }
+    public static void SaveHintLevelFile(string name, string level)
+    {
+        StreamWriter stream = File.CreateText($"Assets/Resources/HintLevels/{name}.json");
+
+        stream.Write(level);
+
+        stream.Close();
+
+        AssetDatabase.Refresh();
     }
 #endif
 
@@ -241,13 +276,13 @@ public class LevelManager : MonoBehaviour
         Debug.Log($"Level Loaded! :)");
     }
 
-    public static sLevel GetSLevelFromFile(int lvlNum)
+    public static sLevel GetSLevelFromFile(string path, int lvlNum)
     {
         // locate file from resources
-        var levelFile = Resources.Load<TextAsset>($"Levels/Level {lvlNum}");
+        var levelFile = Resources.Load<TextAsset>(path);
         if (levelFile == null)
         {
-            Debug.LogError($"Level {lvlNum} does not exist");
+            Debug.LogError($"Level in {path} does not exist");
             return new sLevel();
         }
 
@@ -259,6 +294,10 @@ public class LevelManager : MonoBehaviour
         return level;
     }
 
+    public static sLevel GetSLevelFromFile(int lvlNum)
+    {
+        return GetSLevelFromFile("Levels/Level " + lvlNum, lvlNum);
+    }
 
     private void setGoalTiles()
     {
@@ -278,21 +317,3 @@ public class LevelManager : MonoBehaviour
 
 
 }
-
-#if UNITY_EDITOR
-
-public static class ScriptableObjectUnity
-{
-    public static void SaveLevelFile(string name, string level)
-    {
-        StreamWriter stream = File.CreateText($"Assets/Resources/Levels/{name}.json");
-
-        stream.Write(level);
-
-        stream.Close();
-
-        AssetDatabase.Refresh();
-    }
-}
-
-#endif

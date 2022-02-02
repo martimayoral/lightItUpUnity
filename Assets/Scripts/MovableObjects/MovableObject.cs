@@ -35,7 +35,7 @@ public class MovableObject : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Debug.Log("Movable object Start");
+        //Debug.Log("Movable object Start");
 
         initalPosition = transform.position;
 

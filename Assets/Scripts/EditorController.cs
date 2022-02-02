@@ -7,7 +7,7 @@ using TMPro;
 
 public class EditorController : MonoBehaviour
 {
-    readonly int maxMoves = 50;
+    readonly int maxMoves = 99;
     readonly int minMoves = 3;
     readonly int minStarMoves = 0;
 
@@ -308,7 +308,11 @@ public class EditorController : MonoBehaviour
         exitTitle.text = "You lost";
         exitSubtitle.text = "You need 3 stars to publish";
         DisablePublish();
-        EnableLeftOverMovesButton(-10);
+
+        if (scores.startingMoves >= maxMoves)
+            DisableLeftOverMovesButton();
+        else
+            EnableLeftOverMovesButton(Mathf.Max(-10, scores.startingMoves - maxMoves));
     }
 
     public void BtnContinueEditing()
