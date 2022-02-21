@@ -215,6 +215,14 @@ public static class LevelsController
             levelMedals[levelNum] = medalType;
 
             SaveSystem.SaveLevelsData();
+
+            Debug.Log("Analytics");
+            Firebase.Analytics.FirebaseAnalytics
+                .LogEvent(
+                    "test_new_event",
+                    "level",
+                    levelNum
+                );
         }
     }
 }
