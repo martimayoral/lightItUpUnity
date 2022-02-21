@@ -12,6 +12,9 @@ public static class UserConfig
 
     public static readonly int onlineLoadBatchSize = 30;
     public static bool[] onlineMedalsOptions = { true, true, true, true };
+    public static CloudFirestore.eOrderListBy orderOnlineListBy = CloudFirestore.eOrderListBy.TIMESTAMP;
+    public static bool orderOnlineListAscending = true;
+    public static string filterOnlineName = "";
 }
 
 
@@ -22,6 +25,8 @@ public class UserConfigData
     public float musicVolume;
     public float soundVolume;
     public bool[] onlineMedalsOptions;
+    public bool orderOnlineListAscending;
+    public int orderOnlineListBy;
 
     public UserConfigData()
     {
@@ -29,6 +34,8 @@ public class UserConfigData
         musicVolume = UserConfig.musicVolume;
         soundVolume = UserConfig.soundVolume;
         onlineMedalsOptions = UserConfig.onlineMedalsOptions;
+        orderOnlineListAscending = UserConfig.orderOnlineListAscending;
+        orderOnlineListBy = (int)UserConfig.orderOnlineListBy;
     }
 }
 
@@ -59,9 +66,12 @@ public static class SaveUserConfig
             UserConfig.animationSpeed = data.animationSpeed;
             UserConfig.musicVolume = data.musicVolume;
             UserConfig.soundVolume = data.soundVolume;
+            UserConfig.orderOnlineListBy = (CloudFirestore.eOrderListBy)data.orderOnlineListBy;
+            UserConfig.orderOnlineListAscending = data.orderOnlineListAscending;
 
             if (data.onlineMedalsOptions != null)
                 UserConfig.onlineMedalsOptions = data.onlineMedalsOptions;
+
         }
     }
 

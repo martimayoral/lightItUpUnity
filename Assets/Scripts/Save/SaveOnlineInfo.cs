@@ -25,6 +25,7 @@ public static class SaveOnlineInfo
 
     public static void AddLevelAndSave(string databaseId, medalType medal)
     {
+        CloudFirestore.Instance.UpdateStatsField(databaseId, 0, 1, medal == medalType.GOLD ? 1 : 0);
         AddLevel(databaseId, medal);
         SaveOnlineInfoData();
     }

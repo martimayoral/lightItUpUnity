@@ -27,7 +27,7 @@ public class EditorController : MonoBehaviour
     Tilemap tilemap;
 
     // level info
-    static sLevel level;
+    static OnlineLevel level;
     Scores scores;
     eLevelSize size;
 
@@ -68,7 +68,10 @@ public class EditorController : MonoBehaviour
 
         canPublish = true;
         DisablePublish();
-        publishingAs.text = "Publishing as " + AuthController.username;
+        if (AuthController.username == "")
+            publishingAs.text = "Publishing as Anonymous";
+        else
+            publishingAs.text = "Publishing as " + AuthController.username;
 
         if (level == null)
         {
@@ -208,8 +211,10 @@ public class EditorController : MonoBehaviour
     {
         Debug.Log($"Updating slevel (moves = {scores.startingMoves})");
 
-        level = TileMapUtils.CreateLevel(publishName.text, 0, tilemap, scores, size);
-        level.creatorName = AuthController.username;
+        level = new OnlineLevel(TileMapUtils.CreateLevel(publishName.text, 0, tilemap, scores, size))
+        {
+            creatorName = AuthController.username == "" ? "Anonymous" : AuthController.username
+        };
     }
 
     public void BtnReduceMovesLeftover()
@@ -284,7 +289,7 @@ public class EditorController : MonoBehaviour
         Debug.Log("EDITOR CONTROLLER WIN");
         animatorUI.SetTrigger("playEnd");
         exitTitle.text = "You won!";
-        if (medal != medalType.gold)
+        if (medal != medalType.GOLD)
         {
             exitSubtitle.text = "Well done! but you need 3 stars to publish";
             DisablePublish();
@@ -461,6 +466,14 @@ public class EditorController : MonoBehaviour
 
     public void BtnPublish()
     {
+        if (publishName.text.Length < 3)
+        {
+            ToastController.Instance.ToastWhite("Publish name has to be longer", ToastController.eToastType.TOP);
+            return;
+        }
+
+        settingsPublishButton.interactable = false;
+
         Debug.Log("Trying to publish " + publishName.text);
 
         UpdateSLevel();
@@ -479,9 +492,11 @@ public class EditorController : MonoBehaviour
                 BtnLoadMenu();
             },
             () =>
+            {
                 // on fail
-                ToastController.Instance.ToastRed("Level failed to upload", ToastController.eToastType.TOP)
-            );
+                ToastController.Instance.ToastRed("Level failed to upload", ToastController.eToastType.TOP);
+                settingsPublishButton.interactable = true;
+            });
     }
 
     public void BtnLoadMenu()

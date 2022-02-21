@@ -4,10 +4,11 @@ using UnityEngine;
 
 public enum medalType
 {
-    none,
-    bronze,
-    silver, 
-    gold
+    //JUST_TRIED = -1,
+    NONE = 0,
+    BRONZE = 1,
+    SILVER = 2, 
+    GOLD = 3
 }
 
 public enum directions

@@ -103,6 +103,10 @@ public class PauseMenu : MonoBehaviour
     public void BtnRestart()
     {
         LevelManager.Instance.RestartLevel();
+
+        if (currentLevelOnline)
+            OnlineLevelsController.AddTimePlayed((OnlineLevel)LevelsController.currentLevel);
+
         getMoreMovesButton.interactable = true;
         Resume();
         Debug.Log("RESTARTING...");
@@ -183,8 +187,12 @@ public class PauseMenu : MonoBehaviour
     public void BtnNextLevel()
     {
         Debug.Log("Next level...");
+
         nextLevelButton.interactable = false;
         SceneLoader.Instance.LoadNextLevel();
+
+        if (currentLevelOnline)
+            OnlineLevelsController.AddTimePlayed((OnlineLevel)LevelsController.currentLevel);
     }
 
     public void AdToWinMoves()

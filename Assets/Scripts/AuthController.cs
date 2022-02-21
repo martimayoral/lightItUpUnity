@@ -275,7 +275,12 @@ public class AuthController : MonoBehaviour
                 }
                 else
                 {
+                    DBGText.Write("Register ok; display name: " + user.DisplayName);
                     updateLogging(true);
+                    AuthController.username = username;
+
+                    if (MenuController.Instance)
+                        MenuController.Instance.UpdateLoggingUI();
                 }
             }
             yield return new WaitForSeconds(0.3f);

@@ -397,6 +397,22 @@ public static class TileMapUtils
 
         return dic;
     }
+    public static Dictionary<TileType, int> CountTileTypes(List<SavedTile> tiles)
+    {
+        Dictionary<TileType, int> dic = new Dictionary<TileType, int>();
+
+        foreach (TileType tileType in System.Enum.GetValues(typeof(TileType)))
+        {
+            dic.Add(tileType, 0);
+        }
+
+        foreach (SavedTile tile in tiles)
+        {
+            dic[(TileType)tile.tile]++;
+        }
+
+        return dic;
+    }
 
     public static void ClearMapBorders(Tilemap tilemap, eLevelSize size)
     {

@@ -25,12 +25,43 @@ public struct Scores
 public class sLevel
 {
     public string levelName;
-    public string creatorName;
     public int levelIndex; // if campaing, is the level number. if online, is the number on the list
     public List<SavedTile> tiles;
     public Scores score;
     public eLevelSize levelSize;
+
+    public sLevel()
+    {
+
+    }
+
+    protected sLevel(sLevel other)
+    {
+        levelName = other.levelName;
+        levelIndex = other.levelIndex;
+        tiles = other.tiles;
+        score = other.score;
+        levelSize = other.levelSize;
+    }
+}
+
+public class OnlineLevel : sLevel
+{
+    public struct Stats
+    {
+        public int timesPlayed;
+        public int goldMedals;
+        public int wins;
+    }
+
+    public string creatorName;
     public string levelId;
+    public Stats stats;
+    public string createdAt;
+
+    public OnlineLevel() { }
+
+    public OnlineLevel(sLevel slevel) : base(slevel) { }
 }
 
 // this class is in charge of starting the level and loading it
@@ -114,7 +145,7 @@ public class LevelManager : MonoBehaviour
     public void SaveOnlineData()
     {
         int i = 0;
-        foreach (sLevel level in LevelsController.onlineLevelsList)
+        foreach (OnlineLevel level in OnlineLevelsController.onlineLevelsList)
         {
             i++;
             string name = "online/" + i + ". " + level.levelName + "  " + level.levelId;

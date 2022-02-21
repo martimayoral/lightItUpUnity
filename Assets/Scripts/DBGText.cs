@@ -9,12 +9,15 @@ public class DBGText : MonoBehaviour
     public TextMeshProUGUI thisText;
 
     static string messages;
-    readonly static bool DBG = false;
+    static bool DBG;
+    public bool pbDBG = false;
 
     private void Awake()
     {
         text = thisText;
         text.text = messages ?? "";
+
+        DBG = pbDBG;
 
         if (DBG)
             DontDestroyOnLoad(this);

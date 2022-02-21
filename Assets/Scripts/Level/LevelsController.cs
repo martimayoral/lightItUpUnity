@@ -18,50 +18,6 @@ public static class LevelsController
     // hints
     public static int hintNum = 0;
 
-    public static List<sLevel> onlineLevelsList { get; private set; }
-
-
-
-
-    public static void InitOnlineLevelsList()
-    {
-        if (onlineLevelsList == null)
-            onlineLevelsList = new List<sLevel>();
-    }
-
-    public static int GetNumOnlineStars()
-    {
-        int stars = 0;
-        foreach (int score in SaveOnlineInfo.levelsPlayed.Values)
-            stars += score;
-
-        return stars;
-    }
-
-    /// <summary>
-    /// True if a level can't be played because user has filtered it
-    /// </summary>
-    /// <param name="level"></param>
-    /// <returns></returns>
-    public static bool LevelIsFiltered(sLevel level)
-    {
-        bool isFiltered = false;
-
-        // is filtered if user has played and has the stars filtered
-        if (SaveOnlineInfo.levelsPlayed.ContainsKey(level.levelId))
-        {
-            if (!UserConfig.onlineMedalsOptions[(int)SaveOnlineInfo.levelsPlayed[level.levelId]])
-                isFiltered = true;
-        }
-        else
-        {
-            // if the filter selected is to not show the levels not played
-            if (!UserConfig.onlineMedalsOptions[(int)medalType.none])
-                isFiltered = true;
-        }
-
-        return isFiltered;
-    }
 
     /// <summary>
     /// Returns true if current level is from online online
@@ -73,7 +29,8 @@ public static class LevelsController
 
     public static bool LevelIsOnline(sLevel level)
     {
-        return level.levelId.Length > 0;
+        Debug.Log("Level is online?? " + (level is OnlineLevel).ToString());
+        return level is OnlineLevel;
     }
 
     public static void ChangeCurrentLevelForNext()
@@ -117,9 +74,9 @@ public static class LevelsController
         if (CurrentLevelIsOnline())
         {
             int nextLevelIndex = currentLevel.levelIndex + 1;
-            foreach (sLevel level in onlineLevelsList.GetRange(nextLevelIndex, onlineLevelsList.Count - nextLevelIndex))
+            foreach (sLevel level in OnlineLevelsController.onlineLevelsList.GetRange(nextLevelIndex, OnlineLevelsController.onlineLevelsList.Count - nextLevelIndex))
             {
-                if (!LevelIsFiltered(level))
+                if (!OnlineLevelsController.LevelIsFiltered((OnlineLevel)level))
                     return level;
             }
             return null;
@@ -133,6 +90,7 @@ public static class LevelsController
         }
     }
 
+
     /// <summary>
     /// Resets player local save data
     /// </summary>
@@ -142,7 +100,7 @@ public static class LevelsController
 
         for (int i = 0; i < levelMedals.Length; i++)
         {
-            levelMedals[i] = medalType.none;
+            levelMedals[i] = medalType.NONE;
         }
 
         lastLevelCompleted = 0;
@@ -227,6 +185,8 @@ public static class LevelsController
     }
 
 
+
+
     /// <summary>
     /// Changes the medal type of a local level
     /// </summary>
@@ -236,10 +196,13 @@ public static class LevelsController
     {
         if (CurrentLevelIsOnline())
         {
-            SaveOnlineInfo.AddLevelAndSave(currentLevel.levelId, medalType);
+            SaveOnlineInfo.AddLevelAndSave(((OnlineLevel)currentLevel).levelId, medalType);
         }
         else
         {
+            //if (medalType == medalType.JUST_TRIED)
+            //    return;
+
             lastLevelCompleted = Mathf.Max(levelNum, lastLevelCompleted);
 
             if (levelMedals[levelNum] >= medalType)

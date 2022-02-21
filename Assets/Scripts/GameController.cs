@@ -49,10 +49,10 @@ public class GameController : MonoBehaviour
     medal currentMedal;
     medal[] medals = new medal[]
     {
-        new medal() { type= medalType.none, medalColor = GlobalVars.none, moves = 0 },
-        new medal() { type= medalType.bronze, medalColor = GlobalVars.bronze },
-        new medal() { type= medalType.silver, medalColor = GlobalVars.silver },
-        new medal() { type= medalType.gold, medalColor = GlobalVars.gold }
+        new medal() { type= medalType.NONE, medalColor = GlobalVars.none, moves = 0 },
+        new medal() { type= medalType.BRONZE, medalColor = GlobalVars.bronze },
+        new medal() { type= medalType.SILVER, medalColor = GlobalVars.silver },
+        new medal() { type= medalType.GOLD, medalColor = GlobalVars.gold }
     };
 
     // input buffer
@@ -80,8 +80,8 @@ public class GameController : MonoBehaviour
         // moves and medals
         movesLeft = LevelManager.Instance.scores.startingMoves;
         UpdateMovesUI();
-        currentMedal = medals[(int)medalType.gold];
-        medalUI.sprite = medalSprites[(int)medalType.gold];
+        currentMedal = medals[(int)medalType.GOLD];
+        medalUI.sprite = medalSprites[(int)medalType.GOLD];
         nextMedalText.color = currentMedal.medalColor;
         nextMedalText.SetText(currentMedal.moves.ToString());
 
@@ -123,21 +123,21 @@ public class GameController : MonoBehaviour
 
     public void UpdateCurrentMedal()
     {
-        if (movesLeft >= medals[(int)medalType.gold].moves)
-            currentMedal = medals[(int)medalType.gold];
-        else if (movesLeft >= medals[(int)medalType.silver].moves)
-            currentMedal = medals[(int)medalType.silver];
-        else if (movesLeft >= medals[(int)medalType.bronze].moves)
-            currentMedal = medals[(int)medalType.bronze];
+        if (movesLeft >= medals[(int)medalType.GOLD].moves)
+            currentMedal = medals[(int)medalType.GOLD];
+        else if (movesLeft >= medals[(int)medalType.SILVER].moves)
+            currentMedal = medals[(int)medalType.SILVER];
+        else if (movesLeft >= medals[(int)medalType.BRONZE].moves)
+            currentMedal = medals[(int)medalType.BRONZE];
         else
-            currentMedal = medals[(int)medalType.none];
+            currentMedal = medals[(int)medalType.NONE];
     }
 
     public void SetScoreMoves(int gold, int silver, int bronze)
     {
-        medals[(int)medalType.gold].moves = gold;
-        medals[(int)medalType.silver].moves = silver;
-        medals[(int)medalType.bronze].moves = bronze;
+        medals[(int)medalType.GOLD].moves = gold;
+        medals[(int)medalType.SILVER].moves = silver;
+        medals[(int)medalType.BRONZE].moves = bronze;
     }
 
     // Start is called before the first frame update
@@ -276,7 +276,7 @@ public class GameController : MonoBehaviour
         movesLeft++;
         UpdateMovesUI();
 
-        if (currentMedal.type != medalType.gold)
+        if (currentMedal.type != medalType.GOLD)
         {
             if (movesLeft >= medals[(int)currentMedal.type + 1].moves)
             {

@@ -22,6 +22,11 @@ public class MenuController : MonoBehaviour
     [SerializeField] Button loadMoreLevelsButton;
     [SerializeField] ScrollRect levelsScrollRect;
     [SerializeField] TextMeshProUGUI onlineNumStars;
+    [Header("Filter Levels Online")]
+    [SerializeField] TMP_InputField filterName;
+    [SerializeField] TextMeshProUGUI filterOrderByButtonText;
+    [SerializeField] Toggle filterBiggestFirstToggle;
+
 
     [Header("Settings Panel")]
     [SerializeField] GameObject loggedInUI;
@@ -42,7 +47,7 @@ public class MenuController : MonoBehaviour
     void Awake()
     {
         Instance = this;
-        LevelsController.InitOnlineLevelsList();
+        OnlineLevelsController.InitOnlineLevelsList();
         animator = GetComponent<Animator>();
     }
 
@@ -57,8 +62,10 @@ public class MenuController : MonoBehaviour
             nextWorldButton.interactable = false;
 
         offlineNumStars.text = LevelsController.numOfflineStars.ToString();
-        onlineNumStars.text = LevelsController.GetNumOnlineStars().ToString();
+        onlineNumStars.text = OnlineLevelsController.GetNumOnlineStars().ToString();
         StartPanel();
+
+        // CloudFirestore.Instance.UpdateStatsField("ulR4e49qRtEVFc11YsYj", 1, 1, 0);
     }
 
     void StartPanel()
@@ -87,6 +94,7 @@ public class MenuController : MonoBehaviour
     {
         bool loggedIn = AuthController.Instance.isLoggedIn();
         Debug.Log("Updating logging UI " + (loggedIn ? "(Logged in)" : "(Not Logged in)"));
+        DBGText.Write("Updating logging UI " + (loggedIn ? "(Logged in)" : "(Not Logged in)"));
         if (loggedIn)
         {
             loggedInUI.SetActive(true);
@@ -104,12 +112,12 @@ public class MenuController : MonoBehaviour
     }
     public void BtnLoadLevelEditor()
     {
-        if (AuthController.username != null && AuthController.username != "")
-            SceneLoader.Instance.LoadLevelEditor();
-        else
-        {
-            ToastController.Instance.ToastWhite("Log in to create a level");
-        }
+        //if (AuthController.username != null && AuthController.username != "")
+        SceneLoader.Instance.LoadLevelEditor();
+        //else
+        //{
+        //    ToastController.Instance.ToastWhite("Log in to create a level");
+        //}
     }
 
     public void BtnChangePanel(string triger)
@@ -134,7 +142,7 @@ public class MenuController : MonoBehaviour
     // reset list, is done at the begining
     public void ResetUserLevelsList()
     {
-        LevelsController.onlineLevelsList.Clear();
+        OnlineLevelsController.onlineLevelsList.Clear();
         CloudFirestore.latestDoc = null;
 
         ClearUserLevels();
@@ -143,7 +151,7 @@ public class MenuController : MonoBehaviour
     }
 
     // Instanciates the level
-    public void PopulateLevel(sLevel level)
+    public void PopulateLevel(OnlineLevel level)
     {
         Transform levelObjectTransform = Instantiate(levelInfo, levelInfoParent);
         levelObjectTransform.GetComponent<LevelInfoController>().levelInfo = level;
@@ -158,10 +166,10 @@ public class MenuController : MonoBehaviour
 
         int added = 0;
 
-        for (int i = start; i < LevelsController.onlineLevelsList.Count; i++)
+        for (int i = start; i < OnlineLevelsController.onlineLevelsList.Count; i++)
         {
-            sLevel level = LevelsController.onlineLevelsList[i];
-            if (!LevelsController.LevelIsFiltered(level))
+            OnlineLevel level = OnlineLevelsController.onlineLevelsList[i];
+            if (!OnlineLevelsController.LevelIsFiltered(level))
             {
                 PopulateLevel(level);
                 added++;
@@ -171,7 +179,7 @@ public class MenuController : MonoBehaviour
         loadMoreLevels.transform.SetAsLastSibling();
 
         //if there was no many added, we add more, populating the levels
-        if (LevelsController.onlineLevelsList.Count != 0 && UserConfig.onlineMedalsOptions[(int)medalType.none])
+        if (OnlineLevelsController.onlineLevelsList.Count != 0 && UserConfig.onlineMedalsOptions[(int)medalType.NONE])
         {
             Debug.Log($"Added: {added} < {UserConfig.onlineLoadBatchSize * 0.5}?");
             if ((added < (UserConfig.onlineLoadBatchSize * 0.5)) && loadMoreLevelsButton.interactable)
@@ -185,48 +193,36 @@ public class MenuController : MonoBehaviour
 
     public void PopulateUserLevels()
     {
-        int initialSize = LevelsController.onlineLevelsList.Count;
+        int initialSize = OnlineLevelsController.onlineLevelsList.Count;
 
 
         CloudFirestore.Instance.PopulateListAndDoActionAsync(
             (isLast) =>
                 {
 
-                    DBGText.Write("ACTION init");
-
-                    DBGText.Write("A");
-
                     RefreshUserLevels(initialSize);
-                    DBGText.Write("B");
 
                     loadMoreLevelsButton.interactable = (!isLast);
-                    DBGText.Write("C");
 
                     // when is the first time, we have to set the sroll bar on top
                     if (initialSize == 0)
                     {
-                        DBGText.Write("D");
                         StartCoroutine(ResetScrollBar());
 
-                        DBGText.Write("E");
                         IEnumerator ResetScrollBar()
                         {
-                            DBGText.Write("F");
                             yield return new WaitForEndOfFrame();
-                            DBGText.Write("G");
                             levelsScrollRect.verticalNormalizedPosition = 1;
                         }
                     }
-                    DBGText.Write("H");
-                    DBGText.Write("ACTION end");
                 });
-
     }
+
 
 
     public void BtnUserLevelsPanel()
     {
-        if (LevelsController.onlineLevelsList.Count == 0)
+        if (OnlineLevelsController.onlineLevelsList.Count == 0)
             ResetUserLevelsList();
 
     }
@@ -273,5 +269,75 @@ public class MenuController : MonoBehaviour
         LevelsController.currentWorld = prevWorld;
     }
 
+    // settings user levels
+    public void OpenFilterPanel()
+    {
+        filterName.text = UserConfig.filterOnlineName;
+        filterOrderByButtonText.text = OptionOrderToString(UserConfig.orderOnlineListBy);
+        filterBiggestFirstToggle.isOn = UserConfig.orderOnlineListAscending;
+    }
 
+    public void BtnFilter()
+    {
+        UserConfig.orderOnlineListBy = OptionOrderToEnum(filterOrderByButtonText.text);
+        UserConfig.filterOnlineName = filterName.text;
+        UserConfig.orderOnlineListAscending = filterBiggestFirstToggle.isOn;
+
+        SaveUserConfig.SaveUserConfigData();
+        ResetUserLevelsList();
+    }
+
+    public void BtnChangeOrderBy()
+    {
+        CloudFirestore.eOrderListBy orderListBy = OptionOrderToEnum(filterOrderByButtonText.text);
+
+        orderListBy = (CloudFirestore.eOrderListBy)(((int)orderListBy + 1) % Enum.GetNames(typeof(CloudFirestore.eOrderListBy)).Length);
+
+        filterOrderByButtonText.text = OptionOrderToString(orderListBy);
+    }
+
+    string OptionOrderToString(CloudFirestore.eOrderListBy orderListBy)
+    {
+        switch (orderListBy)
+        {
+            case CloudFirestore.eOrderListBy.TIMESTAMP:
+                return "Creation Time";
+            case CloudFirestore.eOrderListBy.NAME:
+                return "Level Name";
+            case CloudFirestore.eOrderListBy.CREATOR_NAME:
+                return "Creator Name";
+            case CloudFirestore.eOrderListBy.TIMES_PLAYED:
+                return "Times played";
+            case CloudFirestore.eOrderListBy.DIFFICULTY:
+                return "Dificulty";
+            case CloudFirestore.eOrderListBy.MOVES:
+                return "Number of Moves";
+            case CloudFirestore.eOrderListBy.LEVEL_SIZE:
+                return "Level Size";
+            default:
+                return "";
+        }
+    }
+    CloudFirestore.eOrderListBy OptionOrderToEnum(string orderListBy)
+    {
+        switch (orderListBy)
+        {
+            case "Creation Time":
+                return CloudFirestore.eOrderListBy.TIMESTAMP;
+            case "Level Name":
+                return CloudFirestore.eOrderListBy.NAME;
+            case "Creator Name":
+                return CloudFirestore.eOrderListBy.CREATOR_NAME;
+            case "Times played":
+                return CloudFirestore.eOrderListBy.TIMES_PLAYED;
+            case "Dificulty":
+                return CloudFirestore.eOrderListBy.DIFFICULTY;
+            case "Number of Moves":
+                return CloudFirestore.eOrderListBy.MOVES;
+            case "Level Size":
+                return CloudFirestore.eOrderListBy.LEVEL_SIZE;
+            default:
+                return CloudFirestore.eOrderListBy.NAME;
+        }
+    }
 }

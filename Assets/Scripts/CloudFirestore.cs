@@ -56,11 +56,11 @@ public class CloudFirestore : MonoBehaviour
         });
     }
 
-    Dictionary<string, object> SLevelToDLevel(sLevel slevel)
+    Dictionary<string, object> OLevelToDLevel(OnlineLevel oLevel)
     {
         List<object> tiles = new List<object>();
 
-        foreach (SavedTile tile in slevel.tiles)
+        foreach (SavedTile tile in oLevel.tiles)
         {
             tiles.Add(
                 new Dictionary<string, object>
@@ -73,26 +73,37 @@ public class CloudFirestore : MonoBehaviour
 
         return new Dictionary<string, object>
         {
-            {"Name", slevel.levelName },
-            {"Creator", slevel.creatorName },
-            {"Size", slevel.levelSize},
+            {"Name", oLevel.levelName },
+            {"Creator", oLevel.creatorName },
+            {"Size", oLevel.levelSize},
             {"Scores", new Dictionary<string, object>
                 {
-                    {"Starting Moves", slevel.score.startingMoves },
-                    {"Gold Moves", slevel.score.goldMoves },
-                    {"Silver Moves", slevel.score.silverMoves },
-                    {"Bronze Moves", slevel.score.bronzeMoves }
+                    {"Starting Moves", oLevel.score.startingMoves },
+                    {"Gold Moves", oLevel.score.goldMoves },
+                    {"Silver Moves", oLevel.score.silverMoves },
+                    {"Bronze Moves", oLevel.score.bronzeMoves }
                 }
             },
-            {"Tiles", tiles}
+            {"Tiles", tiles},
+            {"Stats", new Dictionary<string, object>
+                {
+                    {"Times Played", 0 },
+                    {"Gold Medals", 0 },
+                    {"Wins", 0 },
+                    {"Difficulty", -1}
+                }
+            },
+            {"Timestamp", Timestamp.GetCurrentTimestamp() }
         };
     }
 
-    static sLevel DLevelToSLevel(Dictionary<string, object> dlevel, string levelId)
+    OnlineLevel DLevelToOLevel(Dictionary<string, object> dlevel, string levelId)
     {
         Debug.Log("Tranforming level " + (string)dlevel["Name"]);
 
         Dictionary<string, object> scores = (Dictionary<string, object>)dlevel["Scores"];
+
+
         List<object> tiles = (List<object>)dlevel["Tiles"];
         List<SavedTile> savedTiles = new List<SavedTile>();
 
@@ -107,12 +118,11 @@ public class CloudFirestore : MonoBehaviour
             });
         }
 
-        return new sLevel
+        OnlineLevel onlineLevel = new OnlineLevel
         {
             levelIndex = 0,
             levelSize = (eLevelSize)Convert.ToInt32(dlevel["Size"]),
             levelName = Convert.ToString(dlevel["Name"]),
-            creatorName = Convert.ToString(dlevel["Creator"]),
             score = new Scores
             {
                 startingMoves = Convert.ToInt32(scores["Starting Moves"]),
@@ -120,11 +130,39 @@ public class CloudFirestore : MonoBehaviour
                 silverMoves = Convert.ToInt32(scores["Silver Moves"]),
                 bronzeMoves = Convert.ToInt32(scores["Bronze Moves"]),
             },
-            tiles = savedTiles
+            tiles = savedTiles,
+
+            creatorName = Convert.ToString(dlevel["Creator"]),
+            levelId = levelId
+
         };
+
+        if (dlevel.ContainsKey("Stats"))
+        {
+            Dictionary<string, object> stats = (Dictionary<string, object>)dlevel["Stats"];
+            onlineLevel.stats = new OnlineLevel.Stats
+            {
+                goldMedals = Convert.ToInt32(stats["Gold Medals"]),
+                timesPlayed = Convert.ToInt32(stats["Times Played"]),
+                wins = Convert.ToInt32(stats["Wins"])
+            };
+        }
+
+        if (dlevel.ContainsKey("Timestamp"))
+        {
+            Timestamp timestamp = (Timestamp)dlevel["Timestamp"];
+            onlineLevel.createdAt = timestamp.ToDateTime().ToShortDateString();
+        }
+        else
+        {
+            CreateTimestamp(levelId);
+            onlineLevel.createdAt = Timestamp.GetCurrentTimestamp().ToDateTime().ToShortDateString();
+        }
+
+        return onlineLevel;
     }
 
-    public void DoActionForEachLevelAsync(Action<sLevel> action)
+    public void DoActionForEachLevelAsync(Action<OnlineLevel> action)
     {
         Query allLevelsQuery = db.Collection("Levels");
         allLevelsQuery.GetSnapshotAsync().ContinueWithOnMainThread(task =>
@@ -136,9 +174,7 @@ public class CloudFirestore : MonoBehaviour
 
                 Dictionary<string, object> dlevel = documentSnapshot.ToDictionary();
 
-                sLevel slevel = DLevelToSLevel(dlevel, documentSnapshot.Id);
-
-                slevel.levelId = documentSnapshot.Id;
+                OnlineLevel slevel = DLevelToOLevel(dlevel, documentSnapshot.Id);
 
                 action.Invoke(slevel);
             }
@@ -146,23 +182,80 @@ public class CloudFirestore : MonoBehaviour
     }
 
     public static DocumentSnapshot latestDoc;
+    public enum eOrderListBy
+    {
+        TIMESTAMP,
+        NAME,
+        CREATOR_NAME,
+        TIMES_PLAYED,
+        DIFFICULTY,
+        LEVEL_SIZE,
+        MOVES
+    }
     public void PopulateListAndDoActionAsync(Action<bool> action)
     {
-        Debug.Log("Start at " + LevelsController.onlineLevelsList.Count);
+        Debug.Log("Start at " + OnlineLevelsController.onlineLevelsList.Count);
 
-        Query allLevelsQuery;
+        Query filteredLevelsQuery;
+
+        eOrderListBy orderListByEnum = UserConfig.orderOnlineListBy;
+        Debug.Log("Ordering by " + orderListByEnum);
+        string orderListBy;
+
+        switch (orderListByEnum)
+        {
+            case eOrderListBy.TIMESTAMP:
+                orderListBy = "Timestamp";
+                break;
+            case eOrderListBy.NAME:
+                orderListBy = "Name";
+                break;
+            case eOrderListBy.CREATOR_NAME:
+                orderListBy = "Creator";
+                break;
+            case eOrderListBy.TIMES_PLAYED:
+                orderListBy = "Stats.Times Played";
+                break;
+            case eOrderListBy.DIFFICULTY:
+                orderListBy = "Stats.Difficulty";
+                break;
+            case eOrderListBy.LEVEL_SIZE:
+                orderListBy = "Size";
+                break;
+            case eOrderListBy.MOVES:
+                orderListBy = "Scores.Starting Moves";
+                break;
+            default:
+                orderListBy = "Timestamp";
+                break;
+        }
+
+        filteredLevelsQuery = db.Collection("Levels");
+
+        if (UserConfig.filterOnlineName != "")
+        {
+            filteredLevelsQuery = filteredLevelsQuery.WhereEqualTo("Name", UserConfig.filterOnlineName);
+        }
+        else
+        {
+            if (UserConfig.orderOnlineListAscending)
+                filteredLevelsQuery = filteredLevelsQuery.OrderBy(orderListBy);
+            else
+                filteredLevelsQuery = filteredLevelsQuery.OrderByDescending(orderListBy);
+        }
 
 
         if (latestDoc != null)
-            allLevelsQuery = db.Collection("Levels").OrderBy("Name").StartAfter(latestDoc).Limit(UserConfig.onlineLoadBatchSize);
-        else
-            allLevelsQuery = db.Collection("Levels").OrderBy("Name").Limit(UserConfig.onlineLoadBatchSize);
+            filteredLevelsQuery = filteredLevelsQuery.StartAfter(latestDoc);
+
+        filteredLevelsQuery = filteredLevelsQuery.Limit(UserConfig.onlineLoadBatchSize);
+
 
         StartCoroutine(PLADAA());
 
         IEnumerator PLADAA()
         {
-            var task = allLevelsQuery.GetSnapshotAsync();
+            var task = filteredLevelsQuery.GetSnapshotAsync();
 
             DBGText.Write("Starting query");
 
@@ -185,17 +278,17 @@ public class CloudFirestore : MonoBehaviour
 
                 Dictionary<string, object> dlevel = documentSnapshot.ToDictionary();
 
-                sLevel slevel = DLevelToSLevel(dlevel, documentSnapshot.Id);
+                OnlineLevel slevel = DLevelToOLevel(dlevel, documentSnapshot.Id);
 
                 slevel.levelId = documentSnapshot.Id;
 
-                slevel.levelIndex = LevelsController.onlineLevelsList.Count;
+                slevel.levelIndex = OnlineLevelsController.onlineLevelsList.Count;
 
                 latestDoc = documentSnapshot;
                 count++;
 
                 DBGText.Write("Level Added");
-                LevelsController.onlineLevelsList.Add(slevel);
+                OnlineLevelsController.onlineLevelsList.Add(slevel);
             }
             bool isLast = UserConfig.onlineLoadBatchSize != count;
 
@@ -208,11 +301,11 @@ public class CloudFirestore : MonoBehaviour
         }
     }
 
-    public void SaveLevel(sLevel slevel, Action onSuccess, Action onFail)
+    public void SaveLevel(OnlineLevel slevel, Action onSuccess, Action onFail)
     {
         Debug.Log("SAVINGLEVEL");
 
-        Dictionary<string, object> dlevel = SLevelToDLevel(slevel);
+        Dictionary<string, object> dlevel = OLevelToDLevel(slevel);
 
         StartCoroutine(ISaveLevel());
 
@@ -233,6 +326,93 @@ public class CloudFirestore : MonoBehaviour
             else
             {
                 onFail.Invoke();
+            }
+        }
+    }
+
+
+    void CreateTimestamp(string databaseId)
+    {
+        DocumentReference docRef = db.Collection("Levels").Document(databaseId);
+
+        StartCoroutine(IUpdateLevel());
+
+        IEnumerator IUpdateLevel()
+        {
+            Dictionary<string, object> update = new Dictionary<string, object>{
+                {"Timestamp", Timestamp.GetCurrentTimestamp() }
+            };
+
+            var mergeTask = docRef.SetAsync(update, SetOptions.MergeAll);
+
+            yield return new WaitUntil(() => mergeTask.IsCompleted);
+
+            if (mergeTask.Exception != null)
+            {
+                Debug.Log("Something Failed Updating Field");
+            }
+        }
+    }
+
+    // update
+    public void UpdateStatsField(string databaseId, int timesPlayedToAdd, int winsToAdd, int goldMedalToAdd)
+    {
+        DocumentReference docRef = db.Collection("Levels").Document(databaseId);
+
+        StartCoroutine(IUpdateLevel());
+
+        IEnumerator IUpdateLevel()
+        {
+            var task = docRef.GetSnapshotAsync();
+            yield return new WaitUntil(() => task.IsCompleted);
+
+
+            if (task.Exception != null)
+            {
+                Debug.Log(String.Format("Document {0} does not exist!", databaseId));
+                yield break;
+            }
+
+            DocumentSnapshot snapshot = task.Result;
+            if (!snapshot.Exists)
+            {
+                Debug.Log(String.Format("Document {0} does not exist!", databaseId));
+                yield break;
+            }
+
+            Dictionary<string, object> dLevel = snapshot.ToDictionary();
+
+            Debug.Assert(timesPlayedToAdd >= 0);
+
+            Dictionary<string, int> stats = new Dictionary<string, int>
+            {
+                {"Times Played", timesPlayedToAdd },
+                {"Gold Medals", goldMedalToAdd },
+                {"Wins", winsToAdd },
+                {"Difficulty", 0 }
+            };
+
+            if (dLevel.ContainsKey("Stats"))
+            {
+                Dictionary<string, object> dLevelStats = (Dictionary<string, object>)dLevel["Stats"];
+                stats["Times Played"] += Convert.ToInt32(dLevelStats["Times Played"]);
+                stats["Wins"] += Convert.ToInt32(dLevelStats["Wins"]);
+                stats["Gold Medals"] += Convert.ToInt32(dLevelStats["Gold Medals"]);
+            }
+
+            stats["Difficulty"] = OnlineLevelsController.CalculateDifficulty(stats["Times Played"], stats["Wins"]);
+
+            Dictionary<string, object> update = new Dictionary<string, object>{
+                { "Stats", stats }
+            };
+
+            var mergeTask = docRef.SetAsync(update, SetOptions.MergeAll);
+
+            yield return new WaitUntil(() => mergeTask.IsCompleted);
+
+            if (mergeTask.Exception != null)
+            {
+                Debug.Log("Something Failed Updating Field");
             }
         }
     }

@@ -22,7 +22,7 @@ public class StartSystem : MonoBehaviour
 
         DBGText.Write("Loading online data...");
         SaveOnlineInfo.InitOnlineInfoData();
-        LevelsController.InitOnlineLevelsList();
+        OnlineLevelsController.InitOnlineLevelsList();
         DBGText.Write("Done!");
 
         DBGText.Write("Loading user data and config...");
