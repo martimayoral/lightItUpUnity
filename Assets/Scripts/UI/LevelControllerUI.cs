@@ -39,6 +39,7 @@ public class LevelControllerUI : MonoBehaviour
     {
         if (!locked)
         {
+            LevelsController.OnTimePlayed(levelId);
             SceneLoader.Instance.LoadLevel(levelId);
         }
     }

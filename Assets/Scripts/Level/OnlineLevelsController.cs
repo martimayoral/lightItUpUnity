@@ -81,9 +81,11 @@ public static class OnlineLevelsController
     }
 
 
-    public static void AddTimePlayed(OnlineLevel level)
+    public static void OnTimePlayed(string levelId)
     {
-        CloudFirestore.Instance.UpdateStatsField(level.levelId, 1, 0, 0);
+        CloudFirestore.Instance.UpdateStatsField(levelId, 1, 0, 0);
+
+        Firebase.Analytics.FirebaseAnalytics.LogEvent("online_level_played", "level_id", levelId);
     }
 
     public static int CalculateDifficulty(int timesPlayed, int wins)

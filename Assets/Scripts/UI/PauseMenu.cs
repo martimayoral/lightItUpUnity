@@ -105,7 +105,9 @@ public class PauseMenu : MonoBehaviour
         LevelManager.Instance.RestartLevel();
 
         if (currentLevelOnline)
-            OnlineLevelsController.AddTimePlayed((OnlineLevel)LevelsController.currentLevel);
+            OnlineLevelsController.OnTimePlayed(((OnlineLevel)LevelsController.currentLevel).levelId);
+        else
+            LevelsController.OnTimePlayed(LevelsController.currentLevel.levelIndex);
 
         getMoreMovesButton.interactable = true;
         Resume();
@@ -192,7 +194,9 @@ public class PauseMenu : MonoBehaviour
         SceneLoader.Instance.LoadNextLevel();
 
         if (currentLevelOnline)
-            OnlineLevelsController.AddTimePlayed((OnlineLevel)LevelsController.currentLevel);
+            OnlineLevelsController.OnTimePlayed(((OnlineLevel)LevelsController.currentLevel).levelId);
+        else
+            LevelsController.OnTimePlayed(LevelsController.currentLevel.levelIndex);
     }
 
     public void AdToWinMoves()

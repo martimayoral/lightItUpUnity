@@ -216,13 +216,19 @@ public static class LevelsController
 
             SaveSystem.SaveLevelsData();
 
-            Debug.Log("Analytics");
             Firebase.Analytics.FirebaseAnalytics
                 .LogEvent(
-                    "test_new_event",
-                    "level",
-                    levelNum
+                    "change_medal_event",
+                    new Firebase.Analytics.Parameter[] {
+                        new Firebase.Analytics.Parameter("level", levelNum),
+                        new Firebase.Analytics.Parameter("medal", medalType.ToString()),
+                    }
                 );
         }
+    }
+
+    public static void OnTimePlayed(int levelNum)
+    {
+        Firebase.Analytics.FirebaseAnalytics.LogEvent("level_played", "level_id", levelNum);
     }
 }

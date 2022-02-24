@@ -129,7 +129,7 @@ public class LevelInfoController : MonoBehaviour
 
     public void BtnOnClick()
     {
-        OnlineLevelsController.AddTimePlayed(levelInfo);
+        OnlineLevelsController.OnTimePlayed(levelInfo.levelId);
         SceneLoader.Instance.LoadLevel(levelInfo);
     }
 }

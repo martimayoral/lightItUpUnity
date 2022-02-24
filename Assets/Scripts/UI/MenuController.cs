@@ -54,7 +54,7 @@ public class MenuController : MonoBehaviour
     private void Start()
     {
         UpdateLoggingUI();
-        RefreshUserLevels();
+        RefreshUserLevels(0, false);
 
         if (LevelsController.currentWorld == 0)
             prevWorldButton.interactable = false;
@@ -158,7 +158,7 @@ public class MenuController : MonoBehaviour
     }
 
     // refresh the UI, not the list
-    public void RefreshUserLevels(int start = 0)
+    public void RefreshUserLevels(int start = 0, bool populate = true)
     {
         Debug.Log("Refreshing user levels");
         if (start == 0)
@@ -177,6 +177,9 @@ public class MenuController : MonoBehaviour
 
         }
         loadMoreLevels.transform.SetAsLastSibling();
+
+        if (!populate)
+            return;
 
         //if there was no many added, we add more, populating the levels
         if (OnlineLevelsController.onlineLevelsList.Count != 0 && UserConfig.onlineMedalsOptions[(int)medalType.NONE])

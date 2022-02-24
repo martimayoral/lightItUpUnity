@@ -10,7 +10,7 @@ public static class UserConfig
     public static float musicVolume = .5f;
     public static float soundVolume = 1f;
 
-    public static readonly int onlineLoadBatchSize = 30;
+    public static readonly int onlineLoadBatchSize = 3;
     public static bool[] onlineMedalsOptions = { true, true, true, true };
     public static CloudFirestore.eOrderListBy orderOnlineListBy = CloudFirestore.eOrderListBy.TIMESTAMP;
     public static bool orderOnlineListAscending = true;

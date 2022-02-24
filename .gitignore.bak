@@ -12,14 +12,12 @@ Assets/Parse/*
 Assets/Firebase/*
 Assets/Plugins/*
 Assets/Editor Default Resources/*
-Assets/StreamingAssets/*
 
 Assets/AssetStoreTools.meta
 Assets/ExternalDependencyManager.meta
 Assets/Firebase.meta
 Assets/Plugins.meta
 Assets/Editor Default Resources.meta
-Assets/StreamingAssets.meta
 
 # Visual Studio cache directory
 .vs/
