@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.Localization.Components;
 
 public class MenuController : MonoBehaviour
 {
@@ -24,7 +25,7 @@ public class MenuController : MonoBehaviour
     [SerializeField] TextMeshProUGUI onlineNumStars;
     [Header("Filter Levels Online")]
     [SerializeField] TMP_InputField filterName;
-    [SerializeField] TextMeshProUGUI filterOrderByButtonText;
+    [SerializeField] LocalizeStringEvent filterOrderByButtonText;
     [SerializeField] Toggle filterBiggestFirstToggle;
 
 
@@ -276,13 +277,15 @@ public class MenuController : MonoBehaviour
     public void OpenFilterPanel()
     {
         filterName.text = UserConfig.filterOnlineName;
-        filterOrderByButtonText.text = OptionOrderToString(UserConfig.orderOnlineListBy);
+
+        filterOrderByButtonText.StringReference.TableEntryReference = OptionOrderToString(UserConfig.orderOnlineListBy);
+
         filterBiggestFirstToggle.isOn = UserConfig.orderOnlineListAscending;
     }
 
     public void BtnFilter()
     {
-        UserConfig.orderOnlineListBy = OptionOrderToEnum(filterOrderByButtonText.text);
+        UserConfig.orderOnlineListBy = OptionOrderToEnum(filterOrderByButtonText.StringReference.TableEntryReference);
         UserConfig.filterOnlineName = filterName.text;
         UserConfig.orderOnlineListAscending = filterBiggestFirstToggle.isOn;
 
@@ -292,11 +295,11 @@ public class MenuController : MonoBehaviour
 
     public void BtnChangeOrderBy()
     {
-        CloudFirestore.eOrderListBy orderListBy = OptionOrderToEnum(filterOrderByButtonText.text);
+        CloudFirestore.eOrderListBy orderListBy = OptionOrderToEnum(filterOrderByButtonText.StringReference.TableEntryReference);
 
         orderListBy = (CloudFirestore.eOrderListBy)(((int)orderListBy + 1) % Enum.GetNames(typeof(CloudFirestore.eOrderListBy)).Length);
 
-        filterOrderByButtonText.text = OptionOrderToString(orderListBy);
+        filterOrderByButtonText.StringReference.TableEntryReference = OptionOrderToString(orderListBy);
     }
 
     string OptionOrderToString(CloudFirestore.eOrderListBy orderListBy)
@@ -304,43 +307,48 @@ public class MenuController : MonoBehaviour
         switch (orderListBy)
         {
             case CloudFirestore.eOrderListBy.TIMESTAMP:
-                return "Creation Time";
+                return "creation time";
             case CloudFirestore.eOrderListBy.NAME:
-                return "Level Name";
+                return "level name";
             case CloudFirestore.eOrderListBy.CREATOR_NAME:
-                return "Creator Name";
+                return "creator name";
             case CloudFirestore.eOrderListBy.TIMES_PLAYED:
-                return "Times played";
+                return "times played";
             case CloudFirestore.eOrderListBy.DIFFICULTY:
-                return "Dificulty";
+                return "dificulty";
             case CloudFirestore.eOrderListBy.MOVES:
-                return "Number of Moves";
+                return "number of moves";
             case CloudFirestore.eOrderListBy.LEVEL_SIZE:
-                return "Level Size";
+                return "level size";
             default:
-                return "";
+                return "creation time";
         }
     }
     CloudFirestore.eOrderListBy OptionOrderToEnum(string orderListBy)
     {
         switch (orderListBy)
         {
-            case "Creation Time":
+            case "creation time":
                 return CloudFirestore.eOrderListBy.TIMESTAMP;
-            case "Level Name":
+            case "level name":
                 return CloudFirestore.eOrderListBy.NAME;
-            case "Creator Name":
+            case "creator name":
                 return CloudFirestore.eOrderListBy.CREATOR_NAME;
-            case "Times played":
+            case "times played":
                 return CloudFirestore.eOrderListBy.TIMES_PLAYED;
-            case "Dificulty":
+            case "dificulty":
                 return CloudFirestore.eOrderListBy.DIFFICULTY;
-            case "Number of Moves":
+            case "number of moves":
                 return CloudFirestore.eOrderListBy.MOVES;
-            case "Level Size":
+            case "level size":
                 return CloudFirestore.eOrderListBy.LEVEL_SIZE;
             default:
                 return CloudFirestore.eOrderListBy.NAME;
         }
+    }
+
+    public void BtnChangeLanguage()
+    {
+        LanguageManager.NextLanguage();
     }
 }

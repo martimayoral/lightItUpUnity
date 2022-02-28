@@ -69,14 +69,14 @@ public class EditorController : MonoBehaviour
         canPublish = true;
         DisablePublish();
         if (AuthController.username == "")
-            publishingAs.text = "Publishing as Anonymous";
+            publishingAs.text = LanguageManager.GetTranslation("publishing as") + " Anonymous";
         else
-            publishingAs.text = "Publishing as " + AuthController.username;
+            publishingAs.text = LanguageManager.GetTranslation("publishing as") + " " + AuthController.username;
 
         if (level == null)
         {
             Debug.Log("Initiating Editor");
-            size = eLevelSize.Small;
+            size = eLevelSize.SMALL;
             TileMapUtils.LoadMapBorders(tilemap, true, size);
             scores = new Scores() { goldMoves = 5, silverMoves = 4, bronzeMoves = 2, startingMoves = 30 };
 
@@ -109,11 +109,11 @@ public class EditorController : MonoBehaviour
 
         if (moves > 0)
         {
-            leftoverMovementsText.text = $"Reduce moves leftover ({moves})";
+            leftoverMovementsText.text = LanguageManager.GetTranslation("reduce moves leftover") + " (" + moves + ")";
         }
         else
         {
-            leftoverMovementsText.text = $"Add {-moves} more moves";
+            leftoverMovementsText.text = LanguageManager.GetTranslation("add") + " " + (-moves) + " " + LanguageManager.GetTranslation("more moves");
         }
     }
 
@@ -252,23 +252,23 @@ public class EditorController : MonoBehaviour
         int numLightBulbs = tileTypesCountDic[TileType.Red] + tileTypesCountDic[TileType.Green] + tileTypesCountDic[TileType.Blue];
         if (numLightBulbs == 0)
         {
-            ToastController.Instance.ToastRed("You need to add some light bulb to Play", ToastController.eToastType.TOP);
+            ToastController.Instance.ToastRed(LanguageManager.GetTranslation("you need to add some light bulb to play"), ToastController.eToastType.TOP);
             return;
         }
 
         if (tileTypesCountDic[TileType.Red] > tileTypesCountDic[TileType.GoalRed])
         {
-            ToastController.Instance.ToastRed("You need to have more red light sources", ToastController.eToastType.TOP);
+            ToastController.Instance.ToastRed(LanguageManager.GetTranslation("you need to have more red light sources"), ToastController.eToastType.TOP);
             return;
         }
         if (tileTypesCountDic[TileType.Green] > tileTypesCountDic[TileType.GoalGreen])
         {
-            ToastController.Instance.ToastRed("You need to have more green light sources", ToastController.eToastType.TOP);
+            ToastController.Instance.ToastRed(LanguageManager.GetTranslation("you need to have more green light sources"), ToastController.eToastType.TOP);
             return;
         }
         if (tileTypesCountDic[TileType.Blue] > tileTypesCountDic[TileType.GoalBlue])
         {
-            ToastController.Instance.ToastRed("You need to have more blue light sources", ToastController.eToastType.TOP);
+            ToastController.Instance.ToastRed(LanguageManager.GetTranslation("you need to have more blue light sources"), ToastController.eToastType.TOP);
             return;
         }
 
@@ -288,15 +288,15 @@ public class EditorController : MonoBehaviour
     {
         Debug.Log("EDITOR CONTROLLER WIN");
         animatorUI.SetTrigger("playEnd");
-        exitTitle.text = "You won!";
+        exitTitle.text = LanguageManager.GetTranslation("wou won!");
         if (medal != medalType.GOLD)
         {
-            exitSubtitle.text = "Well done! but you need 3 stars to publish";
+            exitSubtitle.text = LanguageManager.GetTranslation("well done! but you need 3 stars to publish");
             DisablePublish();
         }
         else
         {
-            exitSubtitle.text = "You can now publish the game";
+            exitSubtitle.text = LanguageManager.GetTranslation("you can now publish the game");
 
             Debug.Log($"Moves left {gameController.movesLeft}, gold moves {scores.goldMoves} ");
             EnablePublish();
@@ -310,8 +310,8 @@ public class EditorController : MonoBehaviour
     {
         Debug.Log("EDITOR CONTROLLER LOSE");
         animatorUI.SetTrigger("playEnd");
-        exitTitle.text = "You lost";
-        exitSubtitle.text = "You need 3 stars to publish";
+        exitTitle.text = LanguageManager.GetTranslation("you lost");
+        exitSubtitle.text = LanguageManager.GetTranslation("you need to win with 3 stars to publish");
         DisablePublish();
 
         if (scores.startingMoves >= maxMoves)
@@ -403,10 +403,10 @@ public class EditorController : MonoBehaviour
         settingsScoresBronze.text = scores.bronzeMoves.ToString();
 
 
-        settingsMapSize.text = size.ToString();
-        if (size == eLevelSize.Small)
+        settingsMapSize.text = LanguageManager.GetTranslation(size.ToString());
+        if (size == eLevelSize.SMALL)
             lessMapSizeButton.interactable = false;
-        else if (size == eLevelSize.Large)
+        else if (size == eLevelSize.LARGE)
             moreMapSizeButton.interactable = false;
     }
 
@@ -417,12 +417,12 @@ public class EditorController : MonoBehaviour
         if (more)
             switch (size)
             {
-                case eLevelSize.Small:
-                    size = eLevelSize.Medium;
+                case eLevelSize.SMALL:
+                    size = eLevelSize.MEDIUM;
                     lessMapSizeButton.interactable = true;
                     break;
-                case eLevelSize.Medium:
-                    size = eLevelSize.Large;
+                case eLevelSize.MEDIUM:
+                    size = eLevelSize.LARGE;
                     moreMapSizeButton.interactable = false;
                     break;
                 default:
@@ -431,19 +431,19 @@ public class EditorController : MonoBehaviour
         else
             switch (size)
             {
-                case eLevelSize.Medium:
-                    size = eLevelSize.Small;
+                case eLevelSize.MEDIUM:
+                    size = eLevelSize.SMALL;
                     lessMapSizeButton.interactable = false;
                     break;
-                case eLevelSize.Large:
+                case eLevelSize.LARGE:
                     moreMapSizeButton.interactable = true;
-                    size = eLevelSize.Medium;
+                    size = eLevelSize.MEDIUM;
                     break;
                 default:
                     break;
             }
 
-        settingsMapSize.text = size.ToString();
+        settingsMapSize.text = LanguageManager.GetTranslation(size.ToString());
         TileMapUtils.LoadMapBorders(tilemap, true, size);
         TileMapUtils.ChangeCameraSize(FindObjectOfType<Camera>(), size);
 
@@ -454,12 +454,12 @@ public class EditorController : MonoBehaviour
     {
         if (canPublish)
         {
-            settingsPublishText.text = "Publish";
+            settingsPublishText.text = LanguageManager.GetTranslation("publish");
             settingsPublishButton.interactable = true;
         }
         else
         {
-            settingsPublishText.text = "you need to win with 3 stars to publish";
+            settingsPublishText.text = LanguageManager.GetTranslation("you need to win with 3 stars to publish");
             settingsPublishButton.interactable = false;
         }
     }
@@ -468,7 +468,7 @@ public class EditorController : MonoBehaviour
     {
         if (publishName.text.Length < 3)
         {
-            ToastController.Instance.ToastWhite("Publish name has to be longer", ToastController.eToastType.TOP);
+            ToastController.Instance.ToastWhite(LanguageManager.GetTranslation("publish name has to be longer"), ToastController.eToastType.TOP);
             return;
         }
 
@@ -485,7 +485,7 @@ public class EditorController : MonoBehaviour
             () =>
             {
                 // on success
-                ToastController.Instance.ToastGreen("Level Published!", ToastController.eToastType.TOP);
+                ToastController.Instance.ToastGreen(LanguageManager.GetTranslation("level published!"), ToastController.eToastType.TOP);
 
                 tilemap.ClearAllTiles();
                 TileMapUtils.LoadMapBorders(tilemap, true, size);
@@ -494,7 +494,7 @@ public class EditorController : MonoBehaviour
             () =>
             {
                 // on fail
-                ToastController.Instance.ToastRed("Level failed to upload", ToastController.eToastType.TOP);
+                ToastController.Instance.ToastRed(LanguageManager.GetTranslation("level failed to upload"), ToastController.eToastType.TOP);
                 settingsPublishButton.interactable = true;
             });
     }

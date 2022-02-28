@@ -102,12 +102,12 @@ public enum TileType
 public enum eLevelSize
 {
     // manually set all tiles
-    Flex,
+    FLEX,
 
     // borders set
-    Small = 10,
-    Medium = 15,
-    Large = 20
+    SMALL = 10,
+    MEDIUM = 15,
+    LARGE = 20
 }
 
 public static class TileMapUtils
@@ -365,14 +365,14 @@ public static class TileMapUtils
     {
         switch (size)
         {
-            case eLevelSize.Flex:
+            case eLevelSize.FLEX:
                 // we don't want any border in flex
                 return -mapMargin;
-            case eLevelSize.Small:
+            case eLevelSize.SMALL:
                 return smallMapCorner;
-            case eLevelSize.Medium:
+            case eLevelSize.MEDIUM:
                 return mediumMapCorner;
-            case eLevelSize.Large:
+            case eLevelSize.LARGE:
                 return largeMapCorner;
             default:
                 Debug.LogError($"Load Map border {size} not defined");
@@ -423,14 +423,14 @@ public static class TileMapUtils
     {
         switch (size)
         {
-            case eLevelSize.Flex:
-            case eLevelSize.Small:
+            case eLevelSize.FLEX:
+            case eLevelSize.SMALL:
                 camera.orthographicSize = smallCameraSize;
                 break;
-            case eLevelSize.Medium:
+            case eLevelSize.MEDIUM:
                 camera.orthographicSize = mediumCameraSize;
                 break;
-            case eLevelSize.Large:
+            case eLevelSize.LARGE:
                 camera.orthographicSize = largeCameraSize;
                 break;
             default:

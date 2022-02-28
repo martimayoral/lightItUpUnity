@@ -146,28 +146,28 @@ public class PauseMenu : MonoBehaviour
 
         if (nextLevel != null)
         {
-            nextLevelText.text = "Next Level ->";
+            nextLevelText.text = LanguageManager.GetTranslation("next level ->");
             nextLevelName.text = nextLevel.levelName;
             nextLevelButton.interactable = true;
 
             if (nextWorldUnlocked)
             {
-                nextLevelText.text = "World unlocked!";
-                nextLevelName.text = "Go to the menu to check it out!";
+                nextLevelText.text = LanguageManager.GetTranslation("world unlocked!");
+                nextLevelName.text = LanguageManager.GetTranslation("go to the menu to check it out!");
                 nextLevelButton.interactable = false;
             }
 
             if (!currentLevelOnline && LevelsController.isWorldLocked(LevelsController.getWorldNum(nextLevel)))
             {
-                nextLevelText.text = "Blocked!";
-                nextLevelName.text = "Next level is blocked";
+                nextLevelText.text = LanguageManager.GetTranslation("blocked!");
+                nextLevelName.text = LanguageManager.GetTranslation("next level is blocked");
                 nextLevelButton.interactable = false;
             }
         }
         else
         {
-            nextLevelText.text = "Congratulations!";
-            nextLevelName.text = "More levels comming soon...";
+            nextLevelText.text = LanguageManager.GetTranslation("congratulations!");
+            nextLevelName.text = LanguageManager.GetTranslation("more levels comming soon...");
             nextLevelButton.interactable = false;
 
             if (currentLevelOnline)

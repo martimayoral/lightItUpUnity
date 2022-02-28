@@ -1,0 +1,604 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: Text_es
+  m_EditorClassIdentifier: 
+  m_LocaleId:
+    m_Code: es
+  m_SharedData: {fileID: 11400000, guid: e14923e2eedd3a848823a11bca888545, type: 2}
+  m_Metadata:
+    m_Items:
+    - id: 0
+  m_TableData:
+  - m_Id: 49420042240
+    m_Localized: esp
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18145446854656
+    m_Localized: espanol
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20352011468800
+    m_Localized: juega - historia
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20617011789824
+    m_Localized: juega - online
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20898780938240
+    m_Localized: editor de niveles
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20976438476800
+    m_Localized: salir del juego
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22274168717312
+    m_Localized: configuracion
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23124060536832
+    m_Localized: musica
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23251957448704
+    m_Localized: sonido
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23392051396608
+    m_Localized: velocidad animacion
+    m_Metadata:
+      m_Items: []
+  - m_Id: 25184164249600
+    m_Localized: idioma
+    m_Metadata:
+      m_Items: []
+  - m_Id: 25368231280640
+    m_Localized: has entrado como {global.username}
+    m_Metadata:
+      m_Items:
+      - id: 0
+  - m_Id: 27796884291584
+    m_Localized: salir
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28001759264768
+    m_Localized: incia session
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28118813900800
+    m_Localized: crear usuario
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56997666488320
+    m_Localized: introduce email...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 57168630513664
+    m_Localized: contrasena
+    m_Metadata:
+      m_Items: []
+  - m_Id: 57308443443200
+    m_Localized: introduce contrasena...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 58250286989312
+    m_Localized: usuario
+    m_Metadata:
+      m_Items: []
+  - m_Id: 58379119230976
+    m_Localized: introduce usuario...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 59237793923072
+    m_Localized: repita contrasena
+    m_Metadata:
+      m_Items: []
+  - m_Id: 60303512043520
+    m_Localized: siguiente mundo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 60705246674944
+    m_Localized: mundo anterior
+    m_Metadata:
+      m_Items: []
+  - m_Id: 61359436464128
+    m_Localized: bloqueado
+    m_Metadata:
+      m_Items: []
+  - m_Id: 61889785233408
+    m_Localized: mundo {world-num}
+    m_Metadata:
+      m_Items:
+      - id: 0
+  - m_Id: 62213849743360
+    m_Localized: mas mundos
+    m_Metadata:
+      m_Items: []
+  - m_Id: 62479575678976
+    m_Localized: proximamente...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 63230230265856
+    m_Localized: carga mas niveles
+    m_Metadata:
+      m_Items: []
+  - m_Id: 92498041634816
+    m_Localized: filtrar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 92806700466176
+    m_Localized: buscar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 93015270621184
+    m_Localized: nombre del nivel...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 93340442427392
+    m_Localized: ordenar por
+    m_Metadata:
+      m_Items: []
+  - m_Id: 98015241699328
+    m_Localized: orden ascendente
+    m_Metadata:
+      m_Items: []
+  - m_Id: 98411024613376
+    m_Localized: confirma
+    m_Metadata:
+      m_Items: []
+  - m_Id: 107186020286464
+    m_Localized: data
+    m_Metadata:
+      m_Items: []
+  - m_Id: 107271055605760
+    m_Localized: nombre del nivel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 107278232059904
+    m_Localized: nombre del autor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 107410553962496
+    m_Localized: veces jugado
+    m_Metadata:
+      m_Items: []
+  - m_Id: 107426219687936
+    m_Localized: dificuldad
+    m_Metadata:
+      m_Items: []
+  - m_Id: 107442330009600
+    m_Localized: numero de movimientos
+    m_Metadata:
+      m_Items: []
+  - m_Id: 107465776168960
+    m_Localized: tamano
+    m_Metadata:
+      m_Items: []
+  - m_Id: 98213611307008
+    m_Localized: cancela
+    m_Metadata:
+      m_Items: []
+  - m_Id: 129954715664384
+    m_Localized: creado el
+    m_Metadata:
+      m_Items: []
+  - m_Id: 130506568630272
+    m_Localized: 'veces jugado:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 130828947030016
+    m_Localized: '% de exito:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 131200361037824
+    m_Localized: 'juega
+
+      ->'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136527668183040
+    m_Localized: pequeno
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136608756662272
+    m_Localized: medio
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136663181950976
+    m_Localized: grande
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136727006674944
+    m_Localized: de exito
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136830895390720
+    m_Localized: movimientos
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136870946799616
+    m_Localized: movimiento
+    m_Metadata:
+      m_Items: []
+  - m_Id: 140823621140480
+    m_Localized: continua
+    m_Metadata:
+      m_Items: []
+  - m_Id: 141070686617600
+    m_Localized: reiniciar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 141337465323520
+    m_Localized: editar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 141748570030080
+    m_Localized: publicar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 142420686274560
+    m_Localized: nombre del nivel...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 142800497278976
+    m_Localized: publica el nivel!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143818471636992
+    m_Localized: oro
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143324823027712
+    m_Localized: plata
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144072751316992
+    m_Localized: bronce
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144332370345984
+    m_Localized: tamano del mapa
+    m_Metadata:
+      m_Items: []
+  - m_Id: 145493865398272
+    m_Localized: necesitas ganar con 3 estrellas para publicar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 145728410877952
+    m_Localized: has perdido
+    m_Metadata:
+      m_Items: []
+  - m_Id: 146238119477248
+    m_Localized: ahora puedes publicar el nivel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 146423767760896
+    m_Localized: bien hecho! pero necesitas 3 estrellas para publicar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 146693406982144
+    m_Localized: has ganado!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 147720436842496
+    m_Localized: reduce los movimientos
+    m_Metadata:
+      m_Items: []
+  - m_Id: 148159895044096
+    m_Localized: movimientos mas
+    m_Metadata:
+      m_Items: []
+  - m_Id: 148343907549184
+    m_Localized: anade
+    m_Metadata:
+      m_Items: []
+  - m_Id: 148981089435648
+    m_Localized: publicando como
+    m_Metadata:
+      m_Items: []
+  - m_Id: 151354918699008
+    m_Localized: pausa
+    m_Metadata:
+      m_Items: []
+  - m_Id: 153355689787392
+    m_Localized: siguiente ->
+    m_Metadata:
+      m_Items: []
+  - m_Id: 153563043594240
+    m_Localized: <- prev
+    m_Metadata:
+      m_Items: []
+  - m_Id: 153645394558976
+    m_Localized: saltar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 154227815612416
+    m_Localized: bienvenido al editor de niveles
+    m_Metadata:
+      m_Items: []
+  - m_Id: 154540098322432
+    m_Localized: aqui podras crear y publicar tus propios niveles
+    m_Metadata:
+      m_Items: []
+  - m_Id: 155028566966272
+    m_Localized: la herramienta de pintar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 155397653135360
+    m_Localized: empieza por la herramienta de pintar para crear elementos al nivel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 155977758932992
+    m_Localized: la herramienta de prueba
+    m_Metadata:
+      m_Items: []
+  - m_Id: 156396425969664
+    m_Localized: una vez que hayas creado tu nivel, pruebelo con la herramienta de
+      prueba
+    m_Metadata:
+      m_Items: []
+  - m_Id: 156974115848192
+    m_Localized: la herramienta de configuracion
+    m_Metadata:
+      m_Items: []
+  - m_Id: 157208267063296
+    m_Localized: podras cambiar la cantidad de movimientos necesarios para superar
+      el nivel y el tamano del mapa en la seccion de configuracion
+    m_Metadata:
+      m_Items: []
+  - m_Id: 158176417284096
+    m_Localized: publica el nivel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 158554940637184
+    m_Localized: 'Cuando estes satisfecho con tu nivel, publicalo para que otros
+      jugadores puedan disfrutarlo.
+
+      necesitas superar el nivel con 3 estrellas
+      para hacerlo.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 160734464573440
+    m_Localized: la bombilla
+    m_Metadata:
+      m_Items: []
+  - m_Id: 160947375833088
+    m_Localized: esto es una bombilla
+    m_Metadata:
+      m_Items: []
+  - m_Id: 161360607051776
+    m_Localized: necesita tu ayuda para encenderse
+    m_Metadata:
+      m_Items: []
+  - m_Id: 161711867428864
+    m_Localized: el movimiento de las bombillas
+    m_Metadata:
+      m_Items: []
+  - m_Id: 162197643329536
+    m_Localized: desliza en cualquier direccion para mover las bombillas
+    m_Metadata:
+      m_Items: []
+  - m_Id: 333712426926080
+    m_Localized: Enciendelas!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 334058448617472
+    m_Localized: guia las bombillas hacia su fuente de energia
+    m_Metadata:
+      m_Items: []
+  - m_Id: 334491506311168
+    m_Localized: las bombillas
+    m_Metadata:
+      m_Items: []
+  - m_Id: 334874395934720
+    m_Localized: el juego termina cuando todas las bombillas estan encendidas
+    m_Metadata:
+      m_Items: []
+  - m_Id: 335352450121728
+    m_Localized: estrellas
+    m_Metadata:
+      m_Items: []
+  - m_Id: 335524898930688
+    m_Localized: al final del nivel, seras recompensado con estrellas. obtendras
+      mas, como menos movimientos hagas.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 336226580824064
+    m_Localized: estos son los movimientos que te quedan
+    m_Metadata:
+      m_Items: []
+  - m_Id: 336583448985600
+    m_Localized: estos son los movimientos hasta perder una estrella
+    m_Metadata:
+      m_Items: []
+  - m_Id: 336965017403392
+    m_Localized: el boton de deshacer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 337198136819712
+    m_Localized: si te equivocas, no te preocupes! siempre puedes volver atras con
+      el boton de deshacer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 340194392408064
+    m_Localized: menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 347224079466496
+    m_Localized: consigue +3 movimientos
+    m_Metadata:
+      m_Items: []
+  - m_Id: 348284617621504
+    m_Localized: siguiente nivel ->
+    m_Metadata:
+      m_Items: []
+  - m_Id: 348748096602112
+    m_Localized: has ganado!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 349734034866176
+    m_Localized: con
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351269984796672
+    m_Localized: mundo desbloqueado!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351392722714624
+    m_Localized: ve al menu a verlo!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351542853632000
+    m_Localized: bloqueado!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351583689375744
+    m_Localized: el siguiente nivel esta bloqueado
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351699460554752
+    m_Localized: felicidades!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 351700567851008
+    m_Localized: mas niveles proximamente...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 354325564620800
+    m_Localized: desliza el dedo en cualquier direccion para ayudar a que la bombilla
+      alcance su fuente de energia
+    m_Metadata:
+      m_Items: []
+  - m_Id: 354575775825920
+    m_Localized: como menos movimientos, mas estrellas
+    m_Metadata:
+      m_Items: []
+  - m_Id: 354802180161536
+    m_Localized: todas las bombillas se mueven a la vez
+    m_Metadata:
+      m_Items: []
+  - m_Id: 354890793222144
+    m_Localized: el nivel termina cuando todas estan iluminades
+    m_Metadata:
+      m_Items: []
+  - m_Id: 355031566647296
+    m_Localized: las bombillas chocan entre si
+    m_Metadata:
+      m_Items: []
+  - m_Id: 355196000141312
+    m_Localized: intenta separarlas primero
+    m_Metadata:
+      m_Items: []
+  - m_Id: 356018775785472
+    m_Localized: ' '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 356927140397056
+    m_Localized: utiliza el terreno para separarlas
+    m_Metadata:
+      m_Items: []
+  - m_Id: 357043163234304
+    m_Localized: cada bombilla tiene que coincidir con el color de la enegia
+    m_Metadata:
+      m_Items: []
+  - m_Id: 357257924182016
+    m_Localized: ten cuidado de no quedarte sin movimientos
+    m_Metadata:
+      m_Items: []
+  - m_Id: 361316605362176
+    m_Localized: el nombre del nivel tiene que ser mas largo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 361423992127488
+    m_Localized: session cerrada
+    m_Metadata:
+      m_Items: []
+  - m_Id: 362550955474944
+    m_Localized: hola
+    m_Metadata:
+      m_Items: []
+  - m_Id: 362992812818432
+    m_Localized: nivel publicado!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 363375949905920
+    m_Localized: error desconocido, prueba de nuevo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 363495768588288
+    m_Localized: por favor introduce su correo electronico
+    m_Metadata:
+      m_Items: []
+  - m_Id: 363728095281152
+    m_Localized: introduce una contrasena
+    m_Metadata:
+      m_Items: []
+  - m_Id: 363907158507520
+    m_Localized: nombre de usuario o contrasena incorrectos
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364092391555072
+    m_Localized: introduce un correo electronico valido
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364516054007808
+    m_Localized: nombre de usuario no valido
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364682735648768
+    m_Localized: la contrasena tiene que tener entre 6 i 20 caracteres
+    m_Metadata:
+      m_Items: []
+  - m_Id: 364864462258176
+    m_Localized: las contrasenas no coinciden
+    m_Metadata:
+      m_Items: []
+  - m_Id: 365149641375744
+    m_Localized: ya hay una cuenta con ese correo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 365274338033664
+    m_Localized: la contrasena no es segura
+    m_Metadata:
+      m_Items: []
+  - m_Id: 365437265772544
+    m_Localized: la sesion ha caducado
+    m_Metadata:
+      m_Items: []
+  - m_Id: 365952317915136
+    m_Localized: necesitas anadir una bombilla para probar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 366164532920320
+    m_Localized: necesitas anadir mas fuentes de energia rojas
+    m_Metadata:
+      m_Items: []
+  - m_Id: 366405411799040
+    m_Localized: necesitas anadir mas fuentes de energia verdes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 366664976302080
+    m_Localized: necesitas anadir mas fuentes de energia azules
+    m_Metadata:
+      m_Items: []
+  - m_Id: 366920841428992
+    m_Localized: no se ha podido publicar el nivel
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 1
+    00000000:
+      type: {class: SmartFormatTag, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_Entries: 00006a80121700000000aad649380000

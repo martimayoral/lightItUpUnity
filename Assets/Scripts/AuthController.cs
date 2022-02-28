@@ -93,7 +93,8 @@ public class AuthController : MonoBehaviour
             if (MenuController.Instance)
                 MenuController.Instance.SettingsPanelShowInit();
             username = user.DisplayName;
-            ToastController.Instance.ToastBlue("Wellcome " + user.DisplayName);
+            LanguageManager.ChangeVariable("username", username);
+            ToastController.Instance.ToastBlue(LanguageManager.GetTranslation("wellcome") + " " + user.DisplayName);
             DBGText.Write("Wellcome " + user.DisplayName);
         }
         else
@@ -147,7 +148,7 @@ public class AuthController : MonoBehaviour
     {
         if (!TextUtils.IsEmail(email))
         {
-            ToastController.Instance.ToastRed("Enter a valid email");
+            ToastController.Instance.ToastRed(LanguageManager.GetTranslation("enter a valid email"));
             return;
         }
         StartCoroutine(ILogin());
@@ -164,22 +165,22 @@ public class AuthController : MonoBehaviour
             {
                 FirebaseException firebaseException = (FirebaseException)signInTask.Exception.GetBaseException();
                 AuthError error = (AuthError)firebaseException.ErrorCode;
-                string output = "Unknown Error, Please Try Again";
+                string output = "unknown error, please try again";
                 switch (error)
                 {
                     case AuthError.InvalidEmail:
-                        output = "Please enter your Email";
+                        output = "please enter your email";
                         break;
                     case AuthError.MissingPassword:
-                        output = "Please enter a password";
+                        output = "please enter a password";
                         break;
                     case AuthError.WrongPassword:
                     case AuthError.UserNotFound:
-                        output = "Wrong username or password";
+                        output = "wrong username or password";
                         break;
 
                 }
-                ToastController.Instance.ToastRed(output);
+                ToastController.Instance.ToastRed(LanguageManager.GetTranslation(output));
             }
             else
             {
@@ -194,22 +195,22 @@ public class AuthController : MonoBehaviour
     {
         if (!TextUtils.IsEmail(email))
         {
-            ToastController.Instance.ToastRed("Enter a valid email");
+            ToastController.Instance.ToastRed(LanguageManager.GetTranslation("enter a valid email"));
             return;
         }
         if (!TextUtils.IsValidUsername(username))
         {
-            ToastController.Instance.ToastRed("Username not valid");
+            ToastController.Instance.ToastRed(LanguageManager.GetTranslation("username not valid"));
             return;
         }
         if (!TextUtils.IsValidPassword(pass))
         {
-            ToastController.Instance.ToastRed("Password must have 6 to 20 characters");
+            ToastController.Instance.ToastRed(LanguageManager.GetTranslation("password must have 6 to 20 characters"));
             return;
         }
         if (!pass.Equals(rePass))
         {
-            ToastController.Instance.ToastRed("Passwords doesn't match!");
+            ToastController.Instance.ToastRed(LanguageManager.GetTranslation("passwords doesn't match!"));
             return;
         }
 
@@ -227,24 +228,24 @@ public class AuthController : MonoBehaviour
             {
                 FirebaseException firebaseException = (FirebaseException)registerTask.Exception.GetBaseException();
                 AuthError error = (AuthError)firebaseException.ErrorCode;
-                string output = "Unknown Error, Please Try Again";
+                string output = "unknown error, please try again";
                 switch (error)
                 {
                     case AuthError.InvalidEmail:
-                        output = "Enter a valid email";
+                        output = "enter a valid email";
                         break;
                     case AuthError.EmailAlreadyInUse:
-                        output = "Email already in use";
+                        output = "email already in use";
                         break;
                     case AuthError.WeakPassword:
-                        output = "Password is not strong enought";
+                        output = "password is not strong enought";
                         break;
                     case AuthError.MissingPassword:
-                        output = "Please enter a password";
+                        output = "please enter a password";
                         break;
 
                 }
-                ToastController.Instance.ToastRed(output);
+                ToastController.Instance.ToastRed(LanguageManager.GetTranslation(output));
             }
             else
             {
@@ -263,21 +264,23 @@ public class AuthController : MonoBehaviour
 
                     FirebaseException firebaseException = (FirebaseException)registerTask.Exception.GetBaseException();
                     AuthError error = (AuthError)firebaseException.ErrorCode;
-                    string output = "Unknown Error, Please Try Again";
+                    string output = "unknown error, please try again";
                     switch (error)
                     {
                         case AuthError.SessionExpired:
-                            output = "Session expired";
+                            output = "session expired";
                             break;
 
                     }
-                    ToastController.Instance.ToastRed(output);
+                    ToastController.Instance.ToastRed(LanguageManager.GetTranslation(output));
                 }
                 else
                 {
                     DBGText.Write("Register ok; display name: " + user.DisplayName);
                     updateLogging(true);
+                    yield return new WaitForSeconds(0.3f);
                     AuthController.username = username;
+                    LanguageManager.ChangeVariable("username", username);
 
                     if (MenuController.Instance)
                         MenuController.Instance.UpdateLoggingUI();
@@ -292,6 +295,6 @@ public class AuthController : MonoBehaviour
     public void Logout()
     {
         auth.SignOut();
-        ToastController.Instance.ToastBlue("Signed out");
+        ToastController.Instance.ToastBlue(LanguageManager.GetTranslation("signed out"));
     }
 }

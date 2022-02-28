@@ -53,16 +53,17 @@ public class LevelInfoController : MonoBehaviour
                 infoText.text = levelInfo.stats.timesPlayed.ToString();
                 break;
             case CloudFirestore.eOrderListBy.LEVEL_SIZE:
-                infoText.text = levelInfo.levelSize.ToString();
+                infoText.text = LanguageManager.GetTranslation(levelInfo.levelSize.ToString());
                 break;
             case CloudFirestore.eOrderListBy.MOVES:
                 int nMoves = levelInfo.score.startingMoves - levelInfo.score.goldMoves;
-                infoText.text = nMoves.ToString() + (nMoves == 1 ? " move" : "moves");
+                infoText.text = nMoves.ToString() + " " +
+                    (nMoves == 1 ? LanguageManager.GetTranslation("move") : LanguageManager.GetTranslation("moves"));
                 break;
             default:
                 if (levelInfo.stats.timesPlayed == 0)
                 {
-                    infoText.text = "-% win";
+                    infoText.text = "-% " + LanguageManager.GetTranslation("win");
                 }
                 else
                 {
@@ -79,7 +80,7 @@ public class LevelInfoController : MonoBehaviour
                     {
                         infoText.color = new Color(0, .8f, 0);
                     }
-                    infoText.text = pr.ToString() + "% win";
+                    infoText.text = pr.ToString() + "% " + LanguageManager.GetTranslation("win");
                 }
                 break;
         }
@@ -121,7 +122,7 @@ public class LevelInfoController : MonoBehaviour
             nGreenText.text = tileTypes[TileType.Green].ToString();
             nRedText.text = tileTypes[TileType.Red].ToString();
 
-            sizeText.text = levelInfo.levelSize.ToString();
+            sizeText.text = LanguageManager.GetTranslation(levelInfo.levelSize.ToString());
         }
 
         moreInfoActive = true;

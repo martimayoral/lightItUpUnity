@@ -1,11 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using TMPro;
+using UnityEngine.Localization.Components;
 
 public class HelpController : MonoBehaviour
 {
-    public TextMeshProUGUI centeredText;
+    public LocalizeStringEvent centeredText;
 
     Animator animator;
 
@@ -48,7 +48,7 @@ public class HelpController : MonoBehaviour
             {
                 case "Begin":
                     animator.SetTrigger("In");
-                    centeredText.text = helpMsg.message;
+                    centeredText.StringReference.TableEntryReference = helpMsg.message;
                     break;
                 case "Change":
                     animator.SetTrigger("Out");
@@ -67,7 +67,7 @@ public class HelpController : MonoBehaviour
     IEnumerator WaitToChangeText(string message, float time)
     {
         yield return new WaitForSecondsRealtime(time);
-        centeredText.text = message;
+        centeredText.StringReference.TableEntryReference = message;
     }
     IEnumerator WaitToTriggerAnimation(string animationTrigger, float time)
     {

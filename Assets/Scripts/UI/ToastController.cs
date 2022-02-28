@@ -5,8 +5,9 @@ using TMPro;
 
 public class ToastController : MonoBehaviour
 {
-    public TextMeshProUGUI top;
-    public TextMeshProUGUI bottom;
+    [SerializeField] TextMeshProUGUI top;
+    [SerializeField] TextMeshProUGUI bottom;
+
     public static ToastController Instance;
 
     public enum eToastType
@@ -47,12 +48,12 @@ public class ToastController : MonoBehaviour
         {
             case eToastType.TOP:
                 anim.SetTrigger("ToastTop");
-                top.SetText(message);
+                top.text = message;
                 top.color = color;
                 break;
             case eToastType.BOTTOM:
                 anim.SetTrigger("ToastBottom");
-                bottom.SetText(message);
+                bottom.text = message;
                 bottom.color = color;
                 break;
             default:
